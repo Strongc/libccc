@@ -221,7 +221,7 @@ namespace ccc {
 
 	/**
 	 * @class Binded1
-	 * @brief 1参数的成员函数绑定对�?
+	 * @brief 1参数的成员函数绑定对豿
 	 */
 	template <typename P>
 	class Binded1 {
@@ -269,7 +269,7 @@ namespace ccc {
 	
 	/**
 	 * @class Binded2
-	 * @brief 2参数的成员函数绑定对�?
+	 * @brief 2参数的成员函数绑定对豿
 	 */
 	template <typename P1, typename P2>
 	class Binded2 {
@@ -318,7 +318,7 @@ namespace ccc {
 	
 	/**
 	 * @class Binded3
-	 * @brief 3参数的成员函数绑定对�?
+	 * @brief 3参数的成员函数绑定对豿
 	 */
 	template <typename P1, typename P2, typename P3>
 	class Binded3 {
@@ -366,10 +366,10 @@ namespace ccc {
 	};
 
 	/**
-	 * @function 绑定无参数成员函�?
+	 * @function 绑定无参数成员函敿
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对�?
+	 * @return 生成的函数对豿
 	 */
 	template <typename T, typename R>
 	Binded0 bind(const WeakPtr<T>& p, R (T::*f)()) {
@@ -381,7 +381,7 @@ namespace ccc {
 	 * @function 绑定1参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对�?
+	 * @return 生成的函数对豿
 	 */
 	template <typename T, typename R, typename P>
 	Binded1<P> bind(const WeakPtr<T>& p, R (T::*f)(P)) {
@@ -393,7 +393,7 @@ namespace ccc {
 	 * @function 绑定2参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对�?
+	 * @return 生成的函数对豿
 	 */
 	template <typename T, typename R, typename P1, typename P2>
 	Binded2<P1, P2> bind(const WeakPtr<T>& p, R (T::*f)(P1, P2)) {
@@ -405,7 +405,7 @@ namespace ccc {
 	 * @function 绑定3参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对�?
+	 * @return 生成的函数对豿
 	 */
 	template <typename T, typename R, typename P1, typename P2, typename P3>
 	Binded3<P1, P2, P3> bind(const WeakPtr<T>& p, R (T::*f)(P1, P2, P3)) {
