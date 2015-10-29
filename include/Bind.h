@@ -30,11 +30,10 @@ namespace ccc {
 			virtual MemProcTrigger3Base* clone() = 0;
 		};
 		
-		template <typename T, typename R,
-			template <typename T> class PtrT = ccc::WeakPtr>
+		template <typename T, typename R>
 		struct MemProcTrigger0 : public MemProcTrigger0Base {
 			typedef R (T::*func_type)();
-			typedef PtrT<T> ref_ptr_type;
+			typedef ccc::WeakPtr<T> ref_ptr_type;
 
 			MemProcTrigger0(ref_ptr_type that, func_type f) : that_(that), f_(f) {}
 			
@@ -65,11 +64,10 @@ namespace ccc {
 			func_type f_;
 		};
 		
-		template <typename T, typename R, typename P,
-			template <typename T> class PtrT = ccc::WeakPtr>
+		template <typename T, typename R, typename P>
 		struct MemProcTrigger1 : public MemProcTrigger1Base<P> {
 			typedef R (T::*func_type)(P);
-			typedef PtrT<T> ref_ptr_type;
+			typedef ccc::WeakPtr<T> ref_ptr_type;
 
 			MemProcTrigger1(ref_ptr_type that, func_type f) : that_(that), f_(f) {}
 			
@@ -100,11 +98,10 @@ namespace ccc {
 			func_type f_;
 		};
 		
-		template <typename T, typename R, typename P1, typename P2,
-			template <typename T> class PtrT = ccc::WeakPtr>
+		template <typename T, typename R, typename P1, typename P2>
 		struct MemProcTrigger2 : public MemProcTrigger2Base<P1, P2> {
 			typedef R (T::*func_type)(P1, P2);
-			typedef PtrT<T> ref_ptr_type;
+			typedef ccc::WeakPtr<T> ref_ptr_type;
 
 			MemProcTrigger2(ref_ptr_type that, func_type f) : that_(that), f_(f) {}
 			
@@ -135,11 +132,10 @@ namespace ccc {
 			func_type f_;
 		};
 		
-		template <typename T, typename R, typename P1, typename P2, typename P3,
-			template <typename T> class PtrT = ccc::WeakPtr>
+		template <typename T, typename R, typename P1, typename P2, typename P3>
 		struct MemProcTrigger3 : public MemProcTrigger3Base<P1, P2, P3> {
 			typedef R (T::*func_type)(P1, P2, P3);
-			typedef PtrT<T> ref_ptr_type;
+			typedef ccc::WeakPtr<T> ref_ptr_type;
 
 			MemProcTrigger3(ref_ptr_type that, func_type f) : that_(that), f_(f) {}
 			

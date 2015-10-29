@@ -34,7 +34,7 @@ namespace ccc {
 
 	/**
 	 * @class AnyException
-	 * @brief ´ÓAnyÖĞÈ¡ÖµÊ±Å×³öµÄÒì³£
+	 * @brief ä»Anyä¸­å–å€¼æ—¶æŠ›å‡ºçš„å¼‚å¸¸
 	 */
 	class AnyException : public std::exception {
 	public:
@@ -42,8 +42,8 @@ namespace ccc {
 	};
 
 	/**
-	 * @class AnyÀàÄ£°å
-	 * @brief ÈôÒªĞŞ¸ÄAny¹¦ÄÜ£¬ÔòÊµÏÖAnyT<Container>µÄ×ÓÀà£¬ÆäÖĞContainerÎª×Ô¶¨ÒåContainerBase×ÓÀàÄ£°å
+	 * @class Anyç±»æ¨¡æ¿
+	 * @brief è‹¥è¦ä¿®æ”¹AnyåŠŸèƒ½ï¼Œåˆ™å®ç°AnyT<Container>çš„å­ç±»ï¼Œå…¶ä¸­Containerä¸ºè‡ªå®šä¹‰ContainerBaseå­ç±»æ¨¡æ¿
 	 */
 	template <template <typename T> class ContainerT>
 	class AnyT {
@@ -110,7 +110,7 @@ namespace ccc {
 			return *this;
 		}
 
-		// ÓÀÔ¶²»ÏàµÈ
+		// æ°¸è¿œä¸ç›¸ç­‰
 		bool operator ==(const AnyT& other) const {
 			return false;
 		}
@@ -125,7 +125,7 @@ namespace ccc {
 
 	/**
 	 * @class Any
-	 * @brief ÈÎÒâÀàĞÍÈİÆ÷
+	 * @brief ä»»æ„ç±»å‹å®¹å™¨
 	 */
 	typedef AnyT<internal_::ContainerImpl> Any;
 }

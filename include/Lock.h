@@ -54,8 +54,8 @@ namespace ccc {
 		CCC_NONCOPYLABLE(Lock)
 	};
 	
-	#define CCC_LOCK(mtx) ccc::Lock lock_##mtx(&mtx);
-	#define CCC_LOCK_P(pmtx) ccc::Lock lock_p_##pmtx(pmtx);
+	#define CCC_LOCK(mtx) ccc::Lock lock_##__LINE__(&(mtx));
+	#define CCC_LOCK_P(pmtx) ccc::Lock lock_p_##__LINE__(pmtx);
 }
 
 #endif // __CCC_LOCK_H__

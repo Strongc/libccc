@@ -13,7 +13,7 @@ namespace ccc {
 	}
 
 	/**
-	 * class 线程基类
+	 * @class 线程基类
 	 */
 	class ThreadBase {
 		CCC_NONCOPYLABLE(ThreadBase)
@@ -36,7 +36,8 @@ namespace ccc {
 	};
 
 	/**
-	 * class 线程�?
+	 * @class 线程类
+	 * @brief 接收一个函数对象并在新开启的线程中运行
 	 */
 	class Thread : public ThreadBase {
 	public:

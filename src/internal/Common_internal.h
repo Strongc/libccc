@@ -7,6 +7,7 @@
 #else
 #include <unistd.h>
 #include <pthread.h>
+#include <semaphore.h>
 #endif
 
 namespace ccc {
@@ -15,10 +16,12 @@ namespace ccc {
 	typedef HANDLE handle_t;
 	typedef handle_t thread_t;
 	typedef unsigned thread_ret_t;
+	typedef handle_t semaphore_t;
 #else
 	typedef void* handle_t;
 	typedef pthread_t thread_t;
 	typedef void* thread_ret_t;
+	typedef sem_t semaphore_t;
 #endif
 
 }

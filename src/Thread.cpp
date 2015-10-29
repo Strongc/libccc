@@ -86,10 +86,14 @@ Thread::Thread(Binded0 f)
 	:ThreadBase(new internal_::ThreadData(f)) {}
 
 void Thread::proc() {
-	internal_::ThreadData* p = dynamic_cast<internal_::ThreadData*>(pd_);
+	try {
+		internal_::ThreadData* p = dynamic_cast<internal_::ThreadData*>(pd_);
 	
-	if (p) {
-		p->func();
+		if (p) {
+			p->func();
+		}
+	} catch (...) {
+		return;
 	}
 }
 

@@ -94,6 +94,7 @@ artifacts/
 *.vspscc
 *.vssscc
 .builds
+*.idb
 *.pidb
 *.svclog
 *.scc
@@ -257,3 +258,6 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+
+#
+Visual Studio*/
