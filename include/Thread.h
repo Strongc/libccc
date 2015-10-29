@@ -41,7 +41,7 @@ namespace ccc {
 	 */
 	class Thread : public ThreadBase {
 	public:
-		explicit Thread(Binded0 bnd);
+		explicit Thread(Proc0 bnd);
 		virtual ~Thread() {}
 
 	protected:

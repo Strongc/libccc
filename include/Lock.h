@@ -34,7 +34,7 @@ namespace ccc {
 	 */
 	struct Lock {
 		explicit Lock(Mutex* pMtx) {
-			assert(pMtx);
+			CCC_ASSERT(pMtx);
 			
 			if (pMtx) {
 				pMtx->enter();

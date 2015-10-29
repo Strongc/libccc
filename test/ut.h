@@ -29,26 +29,28 @@ namespace ut {
 // 定义单元测试
 #define UT_APP(name) \
 	do {\
-		printf("[UT] ======== Test App, name = %s ========\n\n", (#name));\
+		printf("[UT] ======== %s Test ========\n\n", (#name));\
 		std::string appName(#name);\
 		std::vector<ut::ITestUnit*> vecUnits;
+		bool success = true;
 
 // 定义单元测试结束
 #define UT_APP_END \
 		for (std::vector<ut::ITestUnit*>::iterator it = vecUnits.begin(); it != vecUnits.end(); ++it) {\
 			delete (*it);\
 		}\
-		printf("[UT] ======== Test App End, name = %s ========\n\n", appName.c_str());\
+		printf("[UT] ======== %s Test %s ========\n\n", appName.c_str(), (success ? "Success" : "Failed"));\
 	} while (0);
 
-#define _UT_PRINT_START(name) printf("[UT] Test Start, name = %s\n", (name));
-#define _UT_PRINT_END(name) printf("[UT] Test End, name = %s\n", (name));
+#define _UT_PRINT_START(name) printf("[UT] Test Case Start, name = %s\n", (name));
+#define _UT_PRINT_END(name) printf("[UT] Test Case End, name = %s\n", (name));
 
 // 断言
-#define UT_ASSERT(expr, nonce) \
+#define UT_ASSERT(expr, nonce) _UT_ASSERT(expr, nonce, __FILE__, __LINE__)
+#define _UT_ASSERT(expr, nonce, file, line) \
 	do {\
 		if (!(expr)) {\
-			printf("[UT] Assert Failed, %s\n", (nonce));\
+			printf("[UT] Assert Failed, %s\n\tfile = %s\n\tline = %d\n", (nonce), file, line);\
 			return -1;\
 		}\
 	} while (0);
@@ -65,11 +67,11 @@ namespace ut {
 			}\
 			virtual int run() {\
 				_UT_PRINT_START(unitname_.c_str())\
-				try
+                try {
 
 // 定义测试项结束
 #define UT_END \
-				catch (std::exception& e) {\
+                } catch (std::exception& e) {\
 					printf("[UT] Exception Catched, e = %s\n", e.what());\
 					return -1;\
 				} catch (...) {\
@@ -88,10 +90,11 @@ namespace ut {
 		for (std::vector<ut::ITestUnit*>::iterator it = vecUnits.begin(); it != vecUnits.end(); ++it) {\
 			int nRet = (*it)->run();\
 			if (nRet != 0) {\
-				printf("[UT] Test Failed, name = %s\n\n", (*it)->name().c_str());\
+				printf("[UT] Test Case Failed, name = %s\n\n", (*it)->name().c_str());\
+				success = false;\
 				ut::g_nTestRet = -1;\
 			} else {\
-				printf("[UT] Test Succeeded, name = %s\n\n", (*it)->name().c_str());\
+				printf("[UT] Test Case Success, name = %s\n\n", (*it)->name().c_str());\
 			}\
 		}\
 	} while (0);

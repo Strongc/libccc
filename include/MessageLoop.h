@@ -34,8 +34,8 @@ namespace ccc {
 	};
 	
 	struct IMessageLoop {
-		typedef Binded1<Message&> dispatcher_type;
-		typedef Binded2<Message&, bool&> filter_type;
+		typedef Proc1<Message&> dispatcher_type;
+		typedef Proc2<Message&, bool&> filter_type;
 		
 		static const void* MESSAGE_TARGET_BROADCAST;
 		static const void* MESSAGE_TARGET_NONE;

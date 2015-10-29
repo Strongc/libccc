@@ -44,11 +44,11 @@ namespace internal_ {
 	};
 	
 	struct ThreadData : public ThreadBaseData {
-		explicit ThreadData(ccc::Binded0 f) {
+		explicit ThreadData(ccc::Proc0 f) {
 			func = f;
 		}
 
-		Binded0 func;
+		Proc0 func;
 	};
 }
 
@@ -66,7 +66,7 @@ ThreadBase::ThreadBase() {
 }
 
 ThreadBase::ThreadBase(internal_::ThreadBaseData* pd) {
-	assert(pd);
+	CCC_ASSERT(pd);
 	pd_ = pd;
 }
 
@@ -82,7 +82,7 @@ void ThreadBase::join() {
 	pd_->join();
 }
 
-Thread::Thread(Binded0 f)
+Thread::Thread(Proc0 f)
 	:ThreadBase(new internal_::ThreadData(f)) {}
 
 void Thread::proc() {

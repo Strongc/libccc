@@ -61,7 +61,7 @@ MessageLoop::MessageLoop() {
 }
 
 MessageLoop::MessageLoop(internal_::MessageLoopData* pd) {
-	assert(pd);
+	CCC_ASSERT(pd);
 	pd_ = pd;
 }
 
@@ -120,7 +120,7 @@ bool MessageLoopBase::post(void* fromId, void* toId, Message msg) {
 }
 
 bool MessageLoopBase::postback(Message msg) {
-	assert(msg.loop == this);
+	CCC_ASSERT(msg.loop == this);
 
 	void* temp = msg.from;
 	

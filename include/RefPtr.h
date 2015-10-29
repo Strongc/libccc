@@ -24,19 +24,24 @@ namespace ccc {
 		private:
 			~SimpleRef() {
 				if (p_) delete p_;
+				CCC_DBG_PRINT("SimpleRef deleting\n");
 			}
 
 		public:
 			typedef T value_type; 
 			typedef T* ptr_type;
 
-			explicit SimpleRef(ptr_type ptr) : p_(ptr), nRefCnt_(0) {}
+			explicit SimpleRef(ptr_type ptr) : p_(ptr), nRefCnt_(0) {
+				CCC_DBG_PRINT("SimpleRef creating\n");
+			}
 
 			void addRef() {
 				nRefCnt_.inc();
+				CCC_DBG_PRINT("SimpleRef addRef, %u\n", nRefCnt_.get());
 			}
 
 			void release() {
+				CCC_DBG_PRINT("SimpleRef release, %u\n", nRefCnt_.get() - 1);
 				if (nRefCnt_.dec() == 0) {
 					delete this;
 				}
@@ -54,18 +59,25 @@ namespace ccc {
 			typedef T value_type; 
 			typedef T* ptr_type;
 
-			explicit Ref(ptr_type ptr) : p_(ptr), nRefCnt_(0) {}
-			~Ref() {}
+			explicit Ref(ptr_type ptr) : p_(ptr), nRefCnt_(0) {
+				CCC_DBG_PRINT("Ref creating\n");
+			}
+
+			~Ref() {
+				CCC_DBG_PRINT("Ref deleting\n");
+			}
 
 			void addRef() {
 				if (p_) {
 					nRefCnt_.inc();
 				}
+
+				CCC_DBG_PRINT("Ref addRef, %u\n", nRefCnt_.get());
 			}
 
 			void release() {
 				if (nRefCnt_.dec() <= 0) {
-					assert(nRefCnt_.get() == 0);
+					CCC_ASSERT(nRefCnt_.get() == 0);
 
 					if (p_) {
 						delete p_;
@@ -74,6 +86,8 @@ namespace ccc {
 
 					nRefCnt_.set(0);
 				}
+
+				CCC_DBG_PRINT("Ref release, %u\n", nRefCnt_.get());
 			}
 			
 			bool empty() const {
@@ -195,6 +209,8 @@ namespace ccc {
 					pRef_ = new ref_type(ptr);
 					pRef_->addRef();
 				}
+
+				return *this;
 			}
 
 			bool operator ==(const SimplePtr& other) const {
@@ -232,6 +248,22 @@ namespace ccc {
 
 			virtual ~RefPtrBase() {
 				handle_ = 0;
+			}
+
+			ptr_type ptr() {
+				if (this->empty()) {
+					return 0;
+				}
+
+				return (handle_->p_);
+			}
+
+			const ptr_type ptr() const {
+				if (this->empty()) {
+					return 0;
+				}
+
+				return (handle_->p_);
 			}
 
 			bool empty() const {
@@ -313,7 +345,7 @@ namespace ccc {
 		}
 		
 		virtual ~RefPtr() {
-			if (!handle_.empty()) {
+			if (!this->empty()) {
 				handle_->release();
 			}
 		}
@@ -370,7 +402,7 @@ namespace ccc {
 
 		WeakPtr() {}
 
-		explicit WeakPtr(const RefPtr& other) {
+		explicit WeakPtr(const strong_ptr_type& other) {
 			handle_ = other.handle_;
 		}
 
@@ -389,6 +421,7 @@ namespace ccc {
 			try {
 				handle_->addRef();
 			} catch (RefException& e) {
+				(void)e;
 				return ret;
 			}
 
@@ -405,7 +438,7 @@ namespace ccc {
 			return *this;
 		}
 		
-		WeakPtr& operator =(const RefPtr& other) {
+		WeakPtr& operator =(const strong_ptr_type& other) {
 			if (&other != this) {
 				handle_ = other.handle_;
 			}
@@ -417,7 +450,7 @@ namespace ccc {
 			return (handle_ == other.handle_);
 		}
 
-		bool operator ==(const RefPtr& other) const {
+		bool operator ==(const strong_ptr_type& other) const {
 			return (handle_ == other.handle_);
 		}
 		
@@ -425,7 +458,7 @@ namespace ccc {
 			return (handle_ != other.handle_);
 		}
 
-		bool operator !=(const RefPtr& other) const {
+		bool operator !=(const strong_ptr_type& other) const {
 			return (handle_ != other.handle_);
 		}
 	};
