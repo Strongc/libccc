@@ -403,7 +403,7 @@ namespace ccc {
 		}
 
 		void operator ()() {
-			pTrigger_->proc();
+			if (pTrigger_) pTrigger_->proc();
 		}
 		
 	private:
@@ -412,7 +412,7 @@ namespace ccc {
 
 	/**
 	 * @class Proc1
-	 * @brief 1参数的成员函数绑定对豿
+	 * @brief 1参数的成员函数绑定对象
 	 */
 	template <typename P>
 	class Proc1 {
@@ -475,7 +475,7 @@ namespace ccc {
 		}
 
 		void operator ()(P p) {
-			pTrigger_->proc(p);
+			if (pTrigger_) pTrigger_->proc(p);
 		}
 		
 	private:
@@ -484,7 +484,7 @@ namespace ccc {
 	
 	/**
 	 * @class Proc2
-	 * @brief 2参数的成员函数绑定对豿
+	 * @brief 2参数的成员函数绑定对象
 	 */
 	template <typename P1, typename P2>
 	class Proc2 {
@@ -548,7 +548,7 @@ namespace ccc {
 		}
 
 		void operator ()(P1 p1, P2 p2) {
-			pTrigger_->proc(p1, p2);
+			if (pTrigger_) pTrigger_->proc(p1, p2);
 		}
 		
 	private:
@@ -557,7 +557,7 @@ namespace ccc {
 	
 	/**
 	 * @class Proc3
-	 * @brief 3参数的成员函数绑定对豿
+	 * @brief 3参数的成员函数绑定对象
 	 */
 	template <typename P1, typename P2, typename P3>
 	class Proc3 {
@@ -622,7 +622,7 @@ namespace ccc {
 		}
 
 		void operator ()(P1 p1, P2 p2, P3 p3) {
-			pTrigger_->proc(p1, p2, p3);
+			if (pTrigger_) pTrigger_->proc(p1, p2, p3);
 		}
 
 	private:
@@ -630,10 +630,10 @@ namespace ccc {
 	};
 
 	/**
-	 * 绑定无参数成员函敿
+	 * 绑定无参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对豿
+	 * @return 生成的函数对象
 	 */
 	template <typename T, typename R>
 	Proc0 bind0(T* p, R (T::*f)()) {
@@ -657,7 +657,7 @@ namespace ccc {
 	 * 绑定1参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对豿
+	 * @return 生成的函数对象
 	 */
 	template <typename T, typename R, typename P>
 	Proc1<P> bind1(T* p, R (T::*f)(P)) {
@@ -681,7 +681,7 @@ namespace ccc {
 	 * 绑定2参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对豿
+	 * @return 生成的函数对象
 	 */
 	template <typename T, typename R, typename P1, typename P2>
 	Proc2<P1, P2> bind2(T* p, R (T::*f)(P1, P2)) {
@@ -705,7 +705,7 @@ namespace ccc {
 	 * 绑定3参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对豿
+	 * @return 生成的函数对象
 	 */
 	template <typename T, typename R, typename P1, typename P2, typename P3>
 	Proc3<P1, P2, P3> bind3(T* p, R (T::*f)(P1, P2, P3)) {
@@ -726,9 +726,9 @@ namespace ccc {
 	}
 	
 	/**
-	 * 绑定无参数函敿
+	 * 绑定无参数函�?
 	 * @param f 函数指针
-	 * @return 生成的函数对豿
+	 * @return 生成的函数对�?
 	 */
 	template <typename R>
 	Proc0 bind0(R (*f)()) {
@@ -739,7 +739,7 @@ namespace ccc {
 	/**
 	 * 绑定1参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对豿
+	 * @return 生成的函数对�?
 	 */
 	template <typename R, typename P>
 	Proc1<P> bind1(R (*f)(P)) {
@@ -750,7 +750,7 @@ namespace ccc {
 	/**
 	 * 绑定2参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对豿
+	 * @return 生成的函数对�?
 	 */
 	template <typename R, typename P1, typename P2>
 	Proc2<P1, P2> bind2(R (*f)(P1, P2)) {
@@ -761,7 +761,7 @@ namespace ccc {
 	/**
 	 * 绑定3参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对豿
+	 * @return 生成的函数对�?
 	 */
 	template <typename R, typename P1, typename P2, typename P3>
 	Proc3<P1, P2, P3> bind3(R (*f)(P1, P2, P3)) {

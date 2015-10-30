@@ -12,19 +12,21 @@ namespace ut {
 	};
 
 	int g_nTestRet;
+
+#ifdef UT_BLOCK_BEFORE_QUIT
+	char getchar() {
+		return ::getchar();
+	}
+#else
+	char getchar() {return '\0';}
+#endif //UT_BLOCK_BEFORE_QUIT
 }
 
 // main函数返回
-#ifndef NDEBUG
 #define UT_RETURN \
 	if (ut::g_nTestRet) printf("[UT] ******** Test Failed! ********");\
-	getchar();\
+	ut::getchar();\
 	return ut::g_nTestRet;
-#else
-#define UT_RETURN \
-	if (ut::g_nTestRet) printf("[UT] ******** Test Failed! ********");\
-	return ut::g_nTestRet;
-#endif // NDEBUG
 
 // 定义单元测试
 #define UT_APP(name) \
