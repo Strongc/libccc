@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+#define UT_BLOCK_BEFORE_QUIT
+
 namespace ut {
 	struct ITestUnit {
 		virtual int run() = 0;

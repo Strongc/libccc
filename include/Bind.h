@@ -8,25 +8,25 @@ namespace ccc {
 
 	namespace internal_ {
 		struct Trigger0Base {
-			virtual void proc() = 0;
+			virtual void fire() = 0;
 			virtual Trigger0Base* clone() = 0;
 		};
 
 		template <typename P>
 		struct Trigger1Base {
-			virtual void proc(P p) = 0;
+			virtual void fire(P p) = 0;
 			virtual Trigger1Base* clone() = 0;
 		};
 		
 		template <typename P1, typename P2>
 		struct Trigger2Base {
-			virtual void proc(P1 p1, P2 p2) = 0;
+			virtual void fire(P1 p1, P2 p2) = 0;
 			virtual Trigger2Base* clone() = 0;
 		};
 		
 		template <typename P1, typename P2, typename P3>
 		struct Trigger3Base {
-			virtual void proc(P1 p1, P2 p2, P3 p3) = 0;
+			virtual void fire(P1 p1, P2 p2, P3 p3) = 0;
 			virtual Trigger3Base* clone() = 0;
 		};
 		
@@ -93,7 +93,7 @@ namespace ccc {
 				return *this;
 			}
 			
-			virtual void proc() {
+			virtual void fire() {
 				typename ThatTraits::strong_ptr_type ptr = ThatTraits::lock(that_);
 				
 				if (!ptr || !f_) {
@@ -129,7 +129,7 @@ namespace ccc {
 				return *this;
 			}
 			
-			virtual void proc(P p) {
+			virtual void fire(P p) {
 				typename ThatTraits::strong_ptr_type ptr = ThatTraits::lock(that_);
 				
 				if (!ptr || !f_) {
@@ -165,7 +165,7 @@ namespace ccc {
 				return *this;
 			}
 			
-			virtual void proc(P1 p1, P2 p2) {
+			virtual void fire(P1 p1, P2 p2) {
 				typename ThatTraits::strong_ptr_type ptr = ThatTraits::lock(that_);
 				
 				if (!ptr || !f_) {
@@ -201,7 +201,7 @@ namespace ccc {
 				return *this;
 			}
 			
-			virtual void proc(P1 p1, P2 p2, P3 p3) {
+			virtual void fire(P1 p1, P2 p2, P3 p3) {
 				typename ThatTraits::strong_ptr_type ptr = ThatTraits::lock(that_);
 				
 				if (!ptr || !f_) {
@@ -235,7 +235,7 @@ namespace ccc {
 				return *this;
 			}
 			
-			virtual void proc() {
+			virtual void fire() {
 				if (!f_) {
 					return;
 				}
@@ -264,7 +264,7 @@ namespace ccc {
 				return *this;
 			}
 			
-			virtual void proc(P p) {
+			virtual void fire(P p) {
 				if (!f_) {
 					return;
 				}
@@ -293,7 +293,7 @@ namespace ccc {
 				return *this;
 			}
 			
-			virtual void proc(P1 p1, P2 p2) {
+			virtual void fire(P1 p1, P2 p2) {
 				if (!f_) {
 					return;
 				}
@@ -322,7 +322,7 @@ namespace ccc {
 				return *this;
 			}
 			
-			virtual void proc(P1 p1, P2 p2, P3 p3) {
+			virtual void fire(P1 p1, P2 p2, P3 p3) {
 				if (!f_) {
 					return;
 				}
@@ -403,7 +403,7 @@ namespace ccc {
 		}
 
 		void operator ()() {
-			if (pTrigger_) pTrigger_->proc();
+			if (pTrigger_) pTrigger_->fire();
 		}
 		
 	private:
@@ -475,7 +475,7 @@ namespace ccc {
 		}
 
 		void operator ()(P p) {
-			if (pTrigger_) pTrigger_->proc(p);
+			if (pTrigger_) pTrigger_->fire(p);
 		}
 		
 	private:
@@ -548,7 +548,7 @@ namespace ccc {
 		}
 
 		void operator ()(P1 p1, P2 p2) {
-			if (pTrigger_) pTrigger_->proc(p1, p2);
+			if (pTrigger_) pTrigger_->fire(p1, p2);
 		}
 		
 	private:
@@ -622,7 +622,7 @@ namespace ccc {
 		}
 
 		void operator ()(P1 p1, P2 p2, P3 p3) {
-			if (pTrigger_) pTrigger_->proc(p1, p2, p3);
+			if (pTrigger_) pTrigger_->fire(p1, p2, p3);
 		}
 
 	private:
@@ -726,9 +726,9 @@ namespace ccc {
 	}
 	
 	/**
-	 * 绑定无参数函�?
+	 * 绑定无参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对�?
+	 * @return 生成的函数对象
 	 */
 	template <typename R>
 	Proc0 bind0(R (*f)()) {
@@ -739,7 +739,7 @@ namespace ccc {
 	/**
 	 * 绑定1参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对�?
+	 * @return 生成的函数对象
 	 */
 	template <typename R, typename P>
 	Proc1<P> bind1(R (*f)(P)) {
@@ -750,7 +750,7 @@ namespace ccc {
 	/**
 	 * 绑定2参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对�?
+	 * @return 生成的函数对象
 	 */
 	template <typename R, typename P1, typename P2>
 	Proc2<P1, P2> bind2(R (*f)(P1, P2)) {
@@ -761,7 +761,7 @@ namespace ccc {
 	/**
 	 * 绑定3参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对�?
+	 * @return 生成的函数对象
 	 */
 	template <typename R, typename P1, typename P2, typename P3>
 	Proc3<P1, P2, P3> bind3(R (*f)(P1, P2, P3)) {
