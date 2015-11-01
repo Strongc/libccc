@@ -177,7 +177,31 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\src\Atom.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\Lock.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\MessageLoop.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\Semaphore.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\test\test_thread.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\Thread.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\Utiles.cpp"
 				>
 			</File>
 		</Filter>

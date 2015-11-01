@@ -14,8 +14,8 @@ namespace internal_ {
 
 	struct MessageLoopData {
 		typedef std::queue<Message> message_queue_type;
-		typedef std::map<void*, IMessageLoop::dispatcher_type> dispatcher_map_type;
-		typedef std::vector<IMessageLoop::filter_type> filter_queue_type;
+		typedef std::map<void*, MessageLoopBase::dispatcher_type> dispatcher_map_type;
+		typedef std::vector<MessageLoopBase::filter_type> filter_queue_type;
 		
 		Mutex mtxQueueMessage;
 		message_queue_type queueMessage;
@@ -50,11 +50,11 @@ Message::Message(const std::string& type, const Any& data) : from(0), to(0), loo
 }
 
 typedef std::queue<Message> message_queue_type;
-typedef std::map<void*, IMessageLoop::dispatcher_type> dispatcher_map_type;
-typedef std::vector<IMessageLoop::filter_type> filter_queue_type;
+typedef std::map<void*, MessageLoopBase::dispatcher_type> dispatcher_map_type;
+typedef std::vector<MessageLoopBase::filter_type> filter_queue_type;
 
-const void* IMessageLoop::MESSAGE_TARGET_NONE = 0;
-const void* IMessageLoop::MESSAGE_TARGET_BROADCAST = (void*)-1;
+const void* MessageLoopBase::MESSAGE_TARGET_NONE = 0;
+const void* MessageLoopBase::MESSAGE_TARGET_BROADCAST = (void*)-1;
 
 MessageLoop::MessageLoop() {
 	pd_ = new internal_::MessageLoopData;
@@ -69,7 +69,7 @@ MessageLoop::~MessageLoop() {
 	delete pd_;
 }
 
-bool MessageLoop::registerDispatcher(void* toId, IMessageLoop::dispatcher_type dispatcher) {
+bool MessageLoop::registerDispatcher(void* toId, MessageLoopBase::dispatcher_type dispatcher) {
 	if (toId == MESSAGE_TARGET_BROADCAST ||
 		toId == MESSAGE_TARGET_NONE) {
 		return false;
@@ -116,7 +116,7 @@ bool MessageLoopBase::post(void* fromId, void* toId, Message msg) {
 	msg.from = fromId;
 	msg.to = toId;
 
-	return this->IMessageLoop::post(msg);
+	return this->post(msg);
 }
 
 bool MessageLoopBase::postback(Message msg) {
@@ -127,7 +127,7 @@ bool MessageLoopBase::postback(Message msg) {
 	msg.from = msg.to;
 	msg.to = temp;
 	
-	return this->IMessageLoop::post(msg);
+	return this->post(msg);
 }
 
 bool MessageLoopBase::postback(Message msg, void* rewriteFromId) {
@@ -135,12 +135,12 @@ bool MessageLoopBase::postback(Message msg, void* rewriteFromId) {
 	return postback(msg);
 }
 
-void MessageLoop::installFilter(IMessageLoop::filter_type filter) {
+void MessageLoop::installFilter(filter_type filter) {
 	CCC_LOCK(pd_->mtxQueueFilter);
 	pd_->queueFilter.push_back(filter);
 }
 
-void MessageLoop::uninstallFilter(IMessageLoop::filter_type filter) {
+void MessageLoop::uninstallFilter(filter_type filter) {
 	CCC_LOCK(pd_->mtxQueueFilter);
 	
 	pd_->queueFilter.erase(std::remove(pd_->queueFilter.begin(), pd_->queueFilter.end(), filter),

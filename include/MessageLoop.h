@@ -13,13 +13,13 @@ namespace ccc {
 		struct MessageLoopData;
 	}
 	
-	struct IMessageLoop;
+	struct MessageLoopBase;
 
 	class Message {
 	public:
 		void* from;
 		void* to;
-		IMessageLoop* loop;
+		MessageLoopBase* loop;
 
 		std::string type;
 		unsigned seq;
@@ -33,8 +33,8 @@ namespace ccc {
 		static Atom s_atm;
 	};
 	
-	struct IMessageLoop {
-		typedef Proc1<Message&> dispatcher_type;
+	struct MessageLoopBase {
+		typedef Proc1<Message> dispatcher_type;
 		typedef Proc2<Message&, bool&> filter_type;
 		
 		static const void* MESSAGE_TARGET_BROADCAST;
@@ -50,10 +50,7 @@ namespace ccc {
 		virtual void stop() = 0;
 		virtual void stopAsync() = 0;
 		virtual void defaultDispatcher(Message msg) = 0;
-	};
-	
-	class MessageLoopBase : public virtual IMessageLoop {
-	public:
+
 		bool post(void* fromId, void* toId, Message msg);
 		bool postback(Message msg);
 		bool postback(Message msg, void* rewriteFromId);

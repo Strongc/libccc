@@ -41,7 +41,10 @@ namespace ccc {
 	 */
 	class Thread : public ThreadBase {
 	public:
-		explicit Thread(Proc0 bnd);
+		typedef void (*c_func_types)();
+		
+		explicit Thread(Proc0 f);
+		explicit Thread(c_func_types f);
 		virtual ~Thread() {}
 
 	protected:

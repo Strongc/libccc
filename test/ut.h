@@ -80,6 +80,7 @@ namespace ut {
 					return -1;\
 				} catch (...) {\
 					printf("[UT] Exception Catched, e is unknown\n");\
+					return -1;\
 				}\
 				_UT_PRINT_END(unitname_.c_str())\
 				return 0;\

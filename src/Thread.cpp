@@ -8,39 +8,53 @@ namespace internal_ {
 	struct ThreadBaseData {
 		typedef ccc::thread_ret_t (CCCAPI *thread_proc_type)(void*);
 
-		ThreadBaseData() : used(false) {}
+		ThreadBaseData() : running(false) {
+#ifdef _WIN32
+			handle = INVALID_HANDLE_VALUE;
+#endif
+		}
 		
 		virtual ~ThreadBaseData() {
-#ifdef _WIN32
-			CloseHandle(handle);
-#else
-			pthread_detach(&handle);
-#endif
+			clear();
 		}
 		
 		void run(thread_proc_type func, void* param) {
-			if (used) return;
+			if (running) return;
 #ifdef _WIN32
 			unsigned id;
 			handle = (thread_t)_beginthreadex(NULL, 0, func, param, 0, &id);
+			running = (handle != INVALID_HANDLE_VALUE);
 #else
-			pthread_create(&handle, NULL, func, param);
+			int ret = pthread_create(&handle, NULL, func, param);
+			running = (ret == 0);
 #endif
-			used = true;
 		}
 		
 		void join() {
-			if (!used) return;
+			if (!running) return;
 #ifdef _WIN32
 			WaitForSingleObject(handle, INFINITE);
 #else
 			void* pRet;
 			pthread_join(&handle, &pRet);
 #endif
+			clear();
+		}
+		
+		void clear() {
+#ifdef _WIN32
+			if (handle != INVALID_HANDLE_VALUE) {
+				CloseHandle(handle);
+				handle = INVALID_HANDLE_VALUE;
+			}
+#else
+			pthread_detach(&handle);
+#endif
+			running = false;
 		}
 		
 		thread_t handle;
-		bool used;
+		bool running;
 	};
 	
 	struct ThreadData : public ThreadBaseData {
@@ -71,6 +85,7 @@ ThreadBase::ThreadBase(internal_::ThreadBaseData* pd) {
 }
 
 ThreadBase::~ThreadBase() {
+	pd_->clear();
 	delete pd_;
 }
 
@@ -83,7 +98,10 @@ void ThreadBase::join() {
 }
 
 Thread::Thread(Proc0 f)
-	:ThreadBase(new internal_::ThreadData(f)) {}
+	: ThreadBase(new internal_::ThreadData(f)) {}
+
+Thread::Thread(c_func_types f)
+	: ThreadBase(new internal_::ThreadData(bind0(f))) {}
 
 void Thread::proc() {
 	try {
@@ -93,6 +111,7 @@ void Thread::proc() {
 			p->func();
 		}
 	} catch (...) {
+		CCC_ASSERT(0);
 		return;
 	}
 }
