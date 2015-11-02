@@ -38,6 +38,14 @@ Message::Message() : from(0), to(0), loop(0) {
 	this->seq = s_atm.inc();
 }
 
+Message::Message(const Message& other) {
+	this->seq = other.seq;
+	this->from = other.from;
+	this->to = other.to;
+	this->loop = other.loop;
+	this->data = other.data;
+}
+
 Message::Message(const std::string& type) : from(0), to(0), loop(0) {
 	this->seq = s_atm.inc();
 	this->type = type;
@@ -47,6 +55,18 @@ Message::Message(const std::string& type, const Any& data) : from(0), to(0), loo
 	this->seq = s_atm.inc();
 	this->type = type;
 	this->data = data;
+}
+
+Message& Message::operator =(const Message& other) {
+	if (&other == this) return *this;
+
+	this->seq = other.seq;
+	this->from = other.from;
+	this->to = other.to;
+	this->loop = other.loop;
+	this->data = other.data;
+
+	return *this;
 }
 
 typedef std::queue<Message> message_queue_type;
@@ -112,11 +132,15 @@ bool MessageLoop::post(Message msg) {
 	return true;
 }
 
-bool MessageLoopBase::post(void* fromId, void* toId, Message msg) {
+bool MessageLoopBase::postTo(void* toId, void* fromId, Message msg) {
 	msg.from = fromId;
 	msg.to = toId;
 
-	return this->post(msg);
+	int r = this->post(msg);
+
+	int a = 1;
+
+	return r;
 }
 
 bool MessageLoopBase::postback(Message msg) {

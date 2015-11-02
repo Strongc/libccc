@@ -8,8 +8,8 @@ namespace ccc {
 
 	namespace internal_ {
 
-		struct ThreadBaseData;
-		struct ThreadData;
+		class ThreadBaseData;
+		class ThreadData;
 	}
 
 	/**
@@ -36,16 +36,20 @@ namespace ccc {
 	};
 
 	/**
-	 * @class 线程类
+	 * @class 线程
 	 * @brief 接收一个函数对象并在新开启的线程中运行
 	 */
 	class Thread : public ThreadBase {
 	public:
 		typedef void (*c_func_types)();
 		
+		Thread();
 		explicit Thread(Proc0 f);
 		explicit Thread(c_func_types f);
 		virtual ~Thread() {}
+		
+		void runFunc(Proc0 f);
+		void runFunc(c_func_types f);
 
 	protected:
 		virtual void proc();

@@ -5,7 +5,8 @@ namespace ccc {
 
 namespace internal_ {
 
-	struct ThreadBaseData {
+	class ThreadBaseData {
+	public:
 		typedef ccc::thread_ret_t (CCCAPI *thread_proc_type)(void*);
 
 		ThreadBaseData() : running(false) {
@@ -57,7 +58,10 @@ namespace internal_ {
 		bool running;
 	};
 	
-	struct ThreadData : public ThreadBaseData {
+	class ThreadData : public ThreadBaseData {
+	public:
+		ThreadData() {}
+		
 		explicit ThreadData(ccc::Proc0 f) {
 			func = f;
 		}
@@ -97,11 +101,34 @@ void ThreadBase::join() {
 	pd_->join();
 }
 
+//#include "stdio.h"
+
+Thread::Thread()
+	: ThreadBase(new internal_::ThreadData) {}
+
 Thread::Thread(Proc0 f)
 	: ThreadBase(new internal_::ThreadData(f)) {}
 
 Thread::Thread(c_func_types f)
 	: ThreadBase(new internal_::ThreadData(bind0(f))) {}
+	
+void Thread::runFunc(Proc0 f) {
+	internal_::ThreadData* p = dynamic_cast<internal_::ThreadData*>(pd_);
+	
+	if (p) {
+		p->func = f;
+		run();
+	}
+}
+
+void Thread::runFunc(c_func_types f) {
+	internal_::ThreadData* p = dynamic_cast<internal_::ThreadData*>(pd_);
+	
+	if (p) {
+		p->func = bind0(f);
+		run();
+	}
+}
 
 void Thread::proc() {
 	try {

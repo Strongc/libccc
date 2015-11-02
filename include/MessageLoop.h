@@ -26,8 +26,11 @@ namespace ccc {
 		Any data;
 		
 		Message();
+		Message(const Message& other);
 		Message(const std::string& type);
 		Message(const std::string& type, const Any& data);
+		
+		Message& operator =(const Message& other);
 
 	private:
 		static Atom s_atm;
@@ -51,7 +54,7 @@ namespace ccc {
 		virtual void stopAsync() = 0;
 		virtual void defaultDispatcher(Message msg) = 0;
 
-		bool post(void* fromId, void* toId, Message msg);
+		bool postTo(void* toId, void* fromId, Message msg);
 		bool postback(Message msg);
 		bool postback(Message msg, void* rewriteFromId);
 	};
