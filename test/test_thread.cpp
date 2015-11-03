@@ -22,7 +22,7 @@ static void threadProcExpc() {
 int main() {
 	UT_APP(ccc::Thread);
 	
-	UT(ThreadBase Subclass) {
+	UT(ThreadBase subclass) {
 		class MyThread : public ThreadBase {
 		protected:
 			virtual void proc() {

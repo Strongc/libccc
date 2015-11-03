@@ -9,8 +9,8 @@ class MessageLoopDemo {
 public:
 	void start() {
 		loop.registerDispatcher(this, bind1(this, &MessageLoopDemo::processMsg));
-		loopThd.runFunc(bind0(&loop, &MessageLoop::exec));
-		postThd.runFunc(bind0(this, &MessageLoopDemo::post));
+		loopThd.execFunc(bind0(&loop, &MessageLoop::exec));
+		postThd.execFunc(bind0(this, &MessageLoopDemo::post));
 	}
 	
 	void stop() {

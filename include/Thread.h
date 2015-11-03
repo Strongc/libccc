@@ -48,8 +48,8 @@ namespace ccc {
 		explicit Thread(c_func_types f);
 		virtual ~Thread() {}
 		
-		void runFunc(Proc0 f);
-		void runFunc(c_func_types f);
+		void execFunc(Proc0 f);
+		void execFunc(c_func_types f);
 
 	protected:
 		virtual void proc();
