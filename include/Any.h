@@ -91,6 +91,19 @@ namespace ccc {
 			return *pRet;
 		}
 
+		template <typename T>
+		T asDef(const T& def) const {
+			AnyT* self = const_cast<AnyT*>(this);
+
+			T* pRet = self->asPtr<T>();
+
+			if (!pRet) {
+				return def;
+			}
+
+			return *pRet;
+		}
+
 		AnyT& operator =(const AnyT& other) {
 			if (this == &other) {
 				return *this;

@@ -27,7 +27,7 @@ namespace ccc {
 		
 		Message();
 		Message(const Message& other);
-		Message(const std::string& type);
+		explicit Message(const std::string& type);
 		Message(const std::string& type, const Any& data);
 		
 		Message& operator =(const Message& other);

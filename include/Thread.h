@@ -27,7 +27,7 @@ namespace ccc {
 		void join();
 
 	protected:
-		virtual void proc() = 0;
+		virtual void exec() = 0;
 
 		internal_::ThreadBaseData* pd_;
 		
@@ -52,7 +52,7 @@ namespace ccc {
 		void execFunc(c_func_types f);
 
 	protected:
-		virtual void proc();
+		virtual void exec();
 	};
 }
 

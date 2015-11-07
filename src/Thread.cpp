@@ -74,7 +74,7 @@ thread_ret_t CCCAPI ThreadBase::threadProc(void* p) {
 	ThreadBase* that = reinterpret_cast<ThreadBase*>(p);
 
 	if (!that) return 0;
-	that->proc();
+	that->exec();
 
 	return 0;
 }
@@ -100,8 +100,6 @@ void ThreadBase::run() {
 void ThreadBase::join() {
 	pd_->join();
 }
-
-//#include "stdio.h"
 
 Thread::Thread()
 	: ThreadBase(new internal_::ThreadData) {}
@@ -130,7 +128,7 @@ void Thread::execFunc(c_func_types f) {
 	}
 }
 
-void Thread::proc() {
+void Thread::exec() {
 	try {
 		internal_::ThreadData* p = dynamic_cast<internal_::ThreadData*>(pd_);
 	

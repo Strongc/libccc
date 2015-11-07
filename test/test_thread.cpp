@@ -25,7 +25,7 @@ int main() {
 	UT(ThreadBase subclass) {
 		class MyThread : public ThreadBase {
 		protected:
-			virtual void proc() {
+			virtual void exec() {
 				printf("thread start\n");
 				msleep(1000);
 				str = "dirty";
@@ -47,7 +47,7 @@ int main() {
 	UT(join before run) {
 		class MyThread : public ThreadBase {
 		protected:
-			virtual void proc() {}
+			virtual void exec() {}
 		};
 		
 		MyThread thd;
@@ -58,7 +58,7 @@ int main() {
 	UT(run after join) {
 		class MyThread : public ThreadBase {
 		protected:
-			virtual void proc() {
+			virtual void exec() {
 				i = 9;
 			}
 		public:

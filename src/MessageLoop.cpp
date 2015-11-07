@@ -136,11 +136,7 @@ bool MessageLoopBase::postTo(void* toId, void* fromId, Message msg) {
 	msg.from = fromId;
 	msg.to = toId;
 
-	int r = this->post(msg);
-
-	int a = 1;
-
-	return r;
+	return this->post(msg);
 }
 
 bool MessageLoopBase::postback(Message msg) {
