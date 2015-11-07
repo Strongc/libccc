@@ -18,30 +18,30 @@ namespace ccc {
 	namespace internal_ {
 	
 		template <typename T>
-		class SimpleRef {
-			CCC_NONCOPYLABLE(SimpleRef)
+		class SafeProxy {
+			CCC_NONCOPYLABLE(SafeProxy)
 
 		private:
-			~SimpleRef() {
+			~SafeProxy() {
 				if (p_) delete p_;
-				CCC_DBG_PRINT("SimpleRef deleting\n");
+				CCC_DBG_PRINT("SafeProxy deleting\n");
 			}
 
 		public:
 			typedef T value_type; 
 			typedef T* ptr_type;
 
-			explicit SimpleRef(ptr_type ptr) : p_(ptr), nRefCnt_(0) {
-				CCC_DBG_PRINT("SimpleRef creating\n");
+			explicit SafeProxy(ptr_type ptr) : p_(ptr), nRefCnt_(0) {
+				CCC_DBG_PRINT("SafeProxy creating\n");
 			}
 
 			void addRef() {
 				nRefCnt_.inc();
-				CCC_DBG_PRINT("SimpleRef addRef, %u\n", nRefCnt_.get());
+				CCC_DBG_PRINT("SafeProxy addRef, %u\n", nRefCnt_.get());
 			}
 
 			void release() {
-				CCC_DBG_PRINT("SimpleRef release, %u\n", nRefCnt_.get() - 1);
+				CCC_DBG_PRINT("SafeProxy release, %u\n", nRefCnt_.get() - 1);
 				if (nRefCnt_.dec() == 0) {
 					delete this;
 				}
@@ -52,18 +52,18 @@ namespace ccc {
 		};
 		
 		template <typename T>
-		class Ref {
-			CCC_NONCOPYLABLE(Ref)
+		class RefProxy {
+			CCC_NONCOPYLABLE(RefProxy)
 
 		public:
 			typedef T value_type; 
 			typedef T* ptr_type;
 
-			explicit Ref(ptr_type ptr) : p_(ptr), nRefCnt_(0) {
+			explicit RefProxy(ptr_type ptr) : p_(ptr), nRefCnt_(0) {
 				CCC_DBG_PRINT("Ref creating\n");
 			}
 
-			~Ref() {
+			~RefProxy() {
 				CCC_DBG_PRINT("Ref deleting\n");
 			}
 
@@ -76,6 +76,7 @@ namespace ccc {
 			}
 
 			void release() {
+				// RefProxy 对象的生存期是由外部的SafePtr管理的，所以不需要也不能在release中析构自己
 				if (nRefCnt_.dec() <= 0) {
 					CCC_ASSERT(nRefCnt_.get() == 0);
 
@@ -89,7 +90,7 @@ namespace ccc {
 
 				CCC_DBG_PRINT("Ref release, %u\n", nRefCnt_.get());
 			}
-			
+
 			bool empty() const {
 				return (p_ == 0);
 			}
@@ -102,48 +103,48 @@ namespace ccc {
 		 * 简单引用计数指针，不支持weak引用
 		 */
 		template <typename T>
-		class SimplePtr {
-			typedef internal_::SimpleRef<T> ref_type;
+		class SafePtr {
+			typedef internal_::SafeProxy<T> ref_type;
 
 		public:
 			typedef T value_type; 
 			typedef T* ptr_type;
 
-			SimplePtr() : pRef_(0) {}
+			SafePtr() : pProxy_(0) {}
 
-			SimplePtr(ptr_type ptr) : pRef_(0) {
+			SafePtr(ptr_type ptr) : pProxy_(0) {
 				if (ptr) {
-					pRef_ = new ref_type(ptr);
-					pRef_->addRef();
+					pProxy_ = new ref_type(ptr);
+					pProxy_->addRef();
 				}
 			}
 
-			SimplePtr(const SimplePtr& other) : pRef_(0) {
-				ref_type* pRef = other.pRef_;
+			SafePtr(const SafePtr& other) : pProxy_(0) {
+				ref_type* pRef = other.pProxy_;
 
 				if (pRef) {
 					pRef->addRef();
-					pRef_ = pRef;
+					pProxy_ = pRef;
 				}
 			}
 
-			~SimplePtr() {
-				if (pRef_) {
-					pRef_->release();
+			~SafePtr() {
+				if (pProxy_) {
+					pProxy_->release();
 				}
 			}
 
 			bool empty() const {
-				return (!pRef_ || !pRef_->p_);
+				return (!pProxy_ || !pProxy_->p_);
 			}
 			
 			ptr_type ptr() {
-				if (pRef_) return pRef_->p_;
+				if (pProxy_) return pProxy_->p_;
 				return 0;
 			}
 			
 			const ptr_type ptr() const {
-				if (pRef_) return pRef_->p_;
+				if (pProxy_) return pProxy_->p_;
 				return 0;
 			}
 
@@ -152,7 +153,7 @@ namespace ccc {
 					throw RefException("empty ptr.");
 				}
 
-				return *(pRef_->p_);
+				return *(pProxy_->p_);
 			}
 			
 			const value_type& operator *() const {
@@ -160,7 +161,7 @@ namespace ccc {
 					throw RefException("empty ptr.");
 				}
 
-				return *(pRef_->p_);
+				return *(pProxy_->p_);
 			}
 
 			ptr_type operator ->() {
@@ -168,7 +169,7 @@ namespace ccc {
 					throw RefException("empty ptr.");
 				}
 
-				return pRef_->p_;
+				return pProxy_->p_;
 			}
 			
 			const ptr_type operator ->() const {
@@ -176,45 +177,45 @@ namespace ccc {
 					throw RefException("empty ptr.");
 				}
 
-				return pRef_->p_;
+				return pProxy_->p_;
 			}
 
-			SimplePtr& operator =(const SimplePtr& other) {
+			SafePtr& operator =(const SafePtr& other) {
 				if (this == &other) {
 					return *this;
 				}
 
-				if (pRef_) {
-					pRef_->release();
-					pRef_ = 0;
+				if (pProxy_) {
+					pProxy_->release();
+					pProxy_ = 0;
 				}
 
-				ref_type* pRef = other.pRef_;
+				ref_type* pRef = other.pProxy_;
 
 				if (pRef) {
 					pRef->addRef();
-					pRef_ = pRef;
+					pProxy_ = pRef;
 				}
 
 				return *this;
 			}
 			
-			SimplePtr& operator =(ptr_type ptr) {
-				if (pRef_) {
-					pRef_->release();
-					pRef_ = 0;
+			SafePtr& operator =(ptr_type ptr) {
+				if (pProxy_) {
+					pProxy_->release();
+					pProxy_ = 0;
 				}
 				
 				if (ptr) {
-					pRef_ = new ref_type(ptr);
-					pRef_->addRef();
+					pProxy_ = new ref_type(ptr);
+					pProxy_->addRef();
 				}
 
 				return *this;
 			}
 
-			bool operator ==(const SimplePtr& other) const {
-				return (pRef_ == other.pRef_);
+			bool operator ==(const SafePtr& other) const {
+				return (pProxy_ == other.pProxy_);
 			}
 
 			operator bool() {
@@ -226,7 +227,7 @@ namespace ccc {
 			}
 
 		private:
-			mutable ref_type* pRef_;
+			mutable ref_type* pProxy_;
 		};
 
 		/**
@@ -237,8 +238,8 @@ namespace ccc {
 			CCC_NONCOPYLABLE(RefPtrBase)
 
 		protected:
-			typedef Ref<T> ref_type;
-			typedef SimplePtr<ref_type> handle_type;
+			typedef RefProxy<T> proxy_type;
+			typedef SafePtr<proxy_type> proxy_ptr_type;
 
 		public:
 			typedef T value_type;
@@ -247,7 +248,7 @@ namespace ccc {
 			RefPtrBase() {}
 
 			virtual ~RefPtrBase() {
-				handle_ = 0;
+				pProxy_ = 0;
 			}
 
 			ptr_type ptr() {
@@ -255,7 +256,7 @@ namespace ccc {
 					return 0;
 				}
 
-				return (handle_->p_);
+				return (pProxy_->p_);
 			}
 
 			const ptr_type ptr() const {
@@ -263,12 +264,12 @@ namespace ccc {
 					return 0;
 				}
 
-				return (handle_->p_);
+				return (pProxy_->p_);
 			}
 
 			bool empty() const {
 				// 没有指向任何Ref或者Ref内部是空的
-				return handle_.empty() || handle_->empty();
+				return pProxy_.empty() || pProxy_->empty();
 			}
 
 			value_type& operator *() {
@@ -276,7 +277,7 @@ namespace ccc {
 					throw RefException("empty ptr.");
 				}
 
-				return *(handle_->p_);
+				return *(pProxy_->p_);
 			}
 			
 			const value_type& operator *() const {
@@ -284,7 +285,7 @@ namespace ccc {
 					throw RefException("empty ptr.");
 				}
 
-				return *(handle_->p_);
+				return *(pProxy_->p_);
 			}
 
 			ptr_type operator ->() {
@@ -292,7 +293,7 @@ namespace ccc {
 					throw RefException("empty ptr.");
 				}
 
-				return (handle_->p_);
+				return (pProxy_->p_);
 			}
 			
 			const ptr_type operator ->() const {
@@ -300,7 +301,7 @@ namespace ccc {
 					throw RefException("empty ptr.");
 				}
 
-				return (handle_->p_);
+				return (pProxy_->p_);
 			}
 
 			operator bool() {
@@ -312,7 +313,7 @@ namespace ccc {
 			}
 
 		protected:
-			mutable handle_type handle_;
+			mutable proxy_ptr_type pProxy_;
 		};
 	}
 
@@ -330,23 +331,23 @@ namespace ccc {
 		RefPtr() {}
 		
 		RefPtr(const RefPtr& other) {
-			handle_ = other.handle_;
+			pProxy_ = other.pProxy_;
 			
-			if (!handle_.empty()) {
-				handle_->addRef();
+			if (!pProxy_.empty()) {
+				pProxy_->addRef();
 			}
 		}
 		
 		explicit RefPtr(ptr_type ptr) {
 			if (ptr) {
-				handle_ = new ref_type(ptr);
-				handle_->addRef();
+				pProxy_ = new ref_type(ptr);
+				pProxy_->addRef();
 			}
 		}
 		
 		virtual ~RefPtr() {
 			if (!this->empty()) {
-				handle_->release();
+				pProxy_->release();
 			}
 		}
 
@@ -355,39 +356,39 @@ namespace ccc {
 				return *this;
 			}
 			
-			if (!handle_.empty()) {
-				handle_->release();
+			if (!pProxy_.empty()) {
+				pProxy_->release();
 			}
 
-			handle_ = other.handle_;
+			pProxy_ = other.pProxy_;
 			
-			if (!handle_.empty()) {
-				handle_->addRef();
+			if (!pProxy_.empty()) {
+				pProxy_->addRef();
 			}
 
 			return *this;
 		}
 		
 		RefPtr& operator =(ptr_type ptr) {
-			if (!handle_.empty()) {
-				handle_->release();
-				handle_ = 0;
+			if (!pProxy_.empty()) {
+				pProxy_->release();
+				pProxy_ = 0;
 			}
 
 			if (ptr) {
-				handle_ = new ref_type(ptr);
-				handle_->addRef();
+				pProxy_ = new ref_type(ptr);
+				pProxy_->addRef();
 			}
 			
 			return *this;
 		}
 
 		bool operator ==(const RefPtr& other) const {
-			return (handle_ == other.handle_);
+			return (pProxy_ == other.pProxy_);
 		}
 		
 		bool operator !=(const RefPtr& other) const {
-			return (handle_ != other.handle_);
+			return (pProxy_ != other.pProxy_);
 		}
 	};
 
@@ -403,15 +404,15 @@ namespace ccc {
 		WeakPtr() {}
 
 		explicit WeakPtr(const strong_ptr_type& other) {
-			handle_ = other.handle_;
+			pProxy_ = other.pProxy_;
 		}
 
 		WeakPtr(const WeakPtr& other) {
-			handle_ = other.handle_;
+			pProxy_ = other.pProxy_;
 		}
 
 		virtual ~WeakPtr() {
-			handle_ = 0;
+			pProxy_ = 0;
 		}
 
 		// 转换为强引用
@@ -419,20 +420,20 @@ namespace ccc {
 			RefPtr<T> ret;
 
 			try {
-				handle_->addRef();
+				pProxy_->addRef();
 			} catch (RefException& e) {
 				(void)e;
 				return ret;
 			}
 
-			ret.handle_ = handle_;
+			ret.pProxy_ = pProxy_;
 			
 			return ret;
 		}
 
 		WeakPtr& operator =(const WeakPtr& other) {
 			if (&other != this) {
-				handle_ = other.handle_;
+				pProxy_ = other.pProxy_;
 			}
 
 			return *this;
@@ -440,26 +441,26 @@ namespace ccc {
 		
 		WeakPtr& operator =(const strong_ptr_type& other) {
 			if (&other != this) {
-				handle_ = other.handle_;
+				pProxy_ = other.pProxy_;
 			}
 
 			return *this;
 		}
 
 		bool operator ==(const WeakPtr& other) const {
-			return (handle_ == other.handle_);
+			return (pProxy_ == other.pProxy_);
 		}
 
 		bool operator ==(const strong_ptr_type& other) const {
-			return (handle_ == other.handle_);
+			return (pProxy_ == other.pProxy_);
 		}
 		
 		bool operator !=(const WeakPtr& other) const {
-			return (handle_ != other.handle_);
+			return (pProxy_ != other.pProxy_);
 		}
 
 		bool operator !=(const strong_ptr_type& other) const {
-			return (handle_ != other.handle_);
+			return (pProxy_ != other.pProxy_);
 		}
 	};
 }
