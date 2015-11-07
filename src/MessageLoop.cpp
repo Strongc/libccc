@@ -43,6 +43,7 @@ Message::Message(const Message& other) {
 	this->from = other.from;
 	this->to = other.to;
 	this->loop = other.loop;
+	this->type = other.type;
 	this->data = other.data;
 }
 
@@ -64,6 +65,7 @@ Message& Message::operator =(const Message& other) {
 	this->from = other.from;
 	this->to = other.to;
 	this->loop = other.loop;
+	this->type = other.type;
 	this->data = other.data;
 
 	return *this;
@@ -254,7 +256,7 @@ void MessageLoop::stop() {
 	stopAsync();
 
 	{
-		// stop获得锁时，exec或execOnce一定已经返回
+		// stop获得锁时，exec或execOnce一定已经返�?
 		CCC_LOCK(pd_->mtxLooping);
 	}
 }

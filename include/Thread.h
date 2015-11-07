@@ -37,7 +37,7 @@ namespace ccc {
 
 	/**
 	 * @class 线程
-	 * @brief 接收一个函数对象并在新开启的线程中运行
+	 * @brief 接收一个函数对象并在新开启的线程中运�?
 	 */
 	class Thread : public ThreadBase {
 	public:
@@ -48,8 +48,8 @@ namespace ccc {
 		explicit Thread(c_func_types f);
 		virtual ~Thread() {}
 		
-		void execFunc(Proc0 f);
-		void execFunc(c_func_types f);
+		static Thread* execFunc(Proc0 f);
+		static Thread* execFunc(c_func_types f);
 
 	protected:
 		virtual void exec();

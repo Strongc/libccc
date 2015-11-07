@@ -104,7 +104,7 @@ namespace ccc {
 		 */
 		template <typename T>
 		class SafePtr {
-			typedef internal_::SafeProxy<T> ref_type;
+			typedef internal_::SafeProxy<T> proxy_type;
 
 		public:
 			typedef T value_type; 
@@ -114,13 +114,13 @@ namespace ccc {
 
 			SafePtr(ptr_type ptr) : pProxy_(0) {
 				if (ptr) {
-					pProxy_ = new ref_type(ptr);
+					pProxy_ = new proxy_type(ptr);
 					pProxy_->addRef();
 				}
 			}
 
 			SafePtr(const SafePtr& other) : pProxy_(0) {
-				ref_type* pRef = other.pProxy_;
+				proxy_type* pRef = other.pProxy_;
 
 				if (pRef) {
 					pRef->addRef();
@@ -190,7 +190,7 @@ namespace ccc {
 					pProxy_ = 0;
 				}
 
-				ref_type* pRef = other.pProxy_;
+				proxy_type* pRef = other.pProxy_;
 
 				if (pRef) {
 					pRef->addRef();
@@ -207,7 +207,7 @@ namespace ccc {
 				}
 				
 				if (ptr) {
-					pProxy_ = new ref_type(ptr);
+					pProxy_ = new proxy_type(ptr);
 					pProxy_->addRef();
 				}
 
@@ -227,7 +227,7 @@ namespace ccc {
 			}
 
 		private:
-			mutable ref_type* pProxy_;
+			mutable proxy_type* pProxy_;
 		};
 
 		/**
@@ -340,7 +340,7 @@ namespace ccc {
 		
 		explicit RefPtr(ptr_type ptr) {
 			if (ptr) {
-				pProxy_ = new ref_type(ptr);
+				pProxy_ = new proxy_type(ptr);
 				pProxy_->addRef();
 			}
 		}
@@ -376,7 +376,7 @@ namespace ccc {
 			}
 
 			if (ptr) {
-				pProxy_ = new ref_type(ptr);
+				pProxy_ = new proxy_type(ptr);
 				pProxy_->addRef();
 			}
 			
