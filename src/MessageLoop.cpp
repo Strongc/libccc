@@ -15,7 +15,7 @@ namespace internal_ {
 	struct MessageLoopData {
 		typedef std::queue<Message> message_queue_type;
 		typedef std::map<void*, MessageLoopBase::dispatcher_type> dispatcher_map_type;
-		typedef std::vector<MessageLoopBase::filter_type> filter_queue_type;
+		typedef std::vector<MessageLoopBase::filter_type> filter_list_type;
 		
 		Mutex mtxQueueMessage;
 		message_queue_type queueMessage;
@@ -24,7 +24,7 @@ namespace internal_ {
 		dispatcher_map_type mapDispatcher;
 		
 		Mutex mtxQueueFilter;
-		filter_queue_type queueFilter;
+		filter_list_type listFilter;
 		
 		Atom atmStop;
 		Semaphore semMessage;
@@ -39,12 +39,7 @@ Message::Message() : from(0), to(0), loop(0) {
 }
 
 Message::Message(const Message& other) {
-	this->seq = other.seq;
-	this->from = other.from;
-	this->to = other.to;
-	this->loop = other.loop;
-	this->type = other.type;
-	this->data = other.data;
+	copy(other);
 }
 
 Message::Message(const std::string& type) : from(0), to(0), loop(0) {
@@ -58,7 +53,7 @@ Message::Message(const std::string& type, const Any& data) : from(0), to(0), loo
 	this->data = data;
 }
 
-Message& Message::operator =(const Message& other) {
+Message& Message::copy(const Message& other) {
 	if (&other == this) return *this;
 
 	this->seq = other.seq;
@@ -71,9 +66,36 @@ Message& Message::operator =(const Message& other) {
 	return *this;
 }
 
-typedef std::queue<Message> message_queue_type;
-typedef std::map<void*, MessageLoopBase::dispatcher_type> dispatcher_map_type;
-typedef std::vector<MessageLoopBase::filter_type> filter_queue_type;
+Message& Message::operator =(const Message& other) {
+	return copy(other);
+}
+
+MessageLoopBase::MessageLoopBase() {
+
+}
+
+bool MessageLoopBase::postTo(void* toId, void* fromId, Message msg) {
+	msg.from = fromId;
+	msg.to = toId;
+
+	return this->post(msg);
+}
+
+bool MessageLoopBase::postback(Message msg) {
+	CCC_ASSERT(msg.loop == this);
+
+	void* temp = msg.from;
+
+	msg.from = msg.to;
+	msg.to = temp;
+
+	return this->post(msg);
+}
+
+bool MessageLoopBase::postback(Message msg, void* rewriteFromId) {
+	msg.to = rewriteFromId;
+	return postback(msg);
+}
 
 const void* MessageLoopBase::MESSAGE_TARGET_NONE = 0;
 const void* MessageLoopBase::MESSAGE_TARGET_BROADCAST = (void*)-1;
@@ -112,7 +134,7 @@ void MessageLoop::unregisterDispatcher(void* toId) {
 	
 	CCC_LOCK(pd_->mtxMapDispatcher);
 	
-	dispatcher_map_type::iterator it = pd_->mapDispatcher.find(toId);
+	internal_::MessageLoopData::dispatcher_map_type::iterator it = pd_->mapDispatcher.find(toId);
 	
 	if (it != pd_->mapDispatcher.end()) {
 		pd_->mapDispatcher.erase(it);
@@ -134,39 +156,16 @@ bool MessageLoop::post(Message msg) {
 	return true;
 }
 
-bool MessageLoopBase::postTo(void* toId, void* fromId, Message msg) {
-	msg.from = fromId;
-	msg.to = toId;
-
-	return this->post(msg);
-}
-
-bool MessageLoopBase::postback(Message msg) {
-	CCC_ASSERT(msg.loop == this);
-
-	void* temp = msg.from;
-	
-	msg.from = msg.to;
-	msg.to = temp;
-	
-	return this->post(msg);
-}
-
-bool MessageLoopBase::postback(Message msg, void* rewriteFromId) {
-	msg.to = rewriteFromId;
-	return postback(msg);
-}
-
 void MessageLoop::installFilter(filter_type filter) {
 	CCC_LOCK(pd_->mtxQueueFilter);
-	pd_->queueFilter.push_back(filter);
+	pd_->listFilter.push_back(filter);
 }
 
 void MessageLoop::uninstallFilter(filter_type filter) {
 	CCC_LOCK(pd_->mtxQueueFilter);
 	
-	pd_->queueFilter.erase(std::remove(pd_->queueFilter.begin(), pd_->queueFilter.end(), filter),
-		pd_->queueFilter.end());
+	pd_->listFilter.erase(std::remove(pd_->listFilter.begin(), pd_->listFilter.end(), filter),
+		pd_->listFilter.end());
 }
 
 void MessageLoop::exec() {
@@ -209,8 +208,8 @@ bool MessageLoop::execOnce_internal() {
 
 		bool ignore = false;
 
-		for (filter_queue_type::iterator it = pd_->queueFilter.begin();
-			it != pd_->queueFilter.end(); ++it) {
+		for (internal_::MessageLoopData::filter_list_type::iterator it = pd_->listFilter.begin();
+			it != pd_->listFilter.end(); ++it) {
 			(*it)(msg, ignore);
 			
 			unsigned stop = pd_->atmStop.get();
@@ -232,7 +231,7 @@ bool MessageLoop::execOnce_internal() {
 
 		if (msg.to == MESSAGE_TARGET_BROADCAST) {
 			// 广播消息
-			for (dispatcher_map_type::iterator it = pd_->mapDispatcher.begin();
+			for (internal_::MessageLoopData::dispatcher_map_type::iterator it = pd_->mapDispatcher.begin();
 				it != pd_->mapDispatcher.end(); ++it) {
 				if (pd_->atmStop.get()) {
 					return true;
@@ -241,7 +240,7 @@ bool MessageLoop::execOnce_internal() {
 				it->second(msg);
 			}
 		} else {
-			dispatcher_map_type::iterator it = pd_->mapDispatcher.find(msg.to);
+			internal_::MessageLoopData::dispatcher_map_type::iterator it = pd_->mapDispatcher.find(msg.to);
 			
 			if (it != pd_->mapDispatcher.end()) {
 				it->second(msg);

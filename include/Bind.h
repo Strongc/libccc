@@ -10,24 +10,28 @@ namespace ccc {
 		struct Trigger0Base {
 			virtual void fire() = 0;
 			virtual Trigger0Base* clone() = 0;
+			virtual bool equal(const Trigger0Base* pOther)  = 0;
 		};
 
 		template <typename P>
 		struct Trigger1Base {
 			virtual void fire(P p) = 0;
 			virtual Trigger1Base* clone() = 0;
+			virtual bool equal(const Trigger1Base* pOther)  = 0;
 		};
 		
 		template <typename P1, typename P2>
 		struct Trigger2Base {
 			virtual void fire(P1 p1, P2 p2) = 0;
 			virtual Trigger2Base* clone() = 0;
+			virtual bool equal(const Trigger2Base* pOther)  = 0;
 		};
 		
 		template <typename P1, typename P2, typename P3>
 		struct Trigger3Base {
 			virtual void fire(P1 p1, P2 p2, P3 p3) = 0;
 			virtual Trigger3Base* clone() = 0;
+			virtual bool equal(const Trigger3Base* pOther)  = 0;
 		};
 		
 		typedef ccc::Void Void;
@@ -109,6 +113,22 @@ namespace ccc {
 				return new Trigger0(that_, f_);
 			}
 
+			virtual bool equal(const Trigger0Base* pOther) {
+				if (pOther == this) return true;
+
+				try {
+					Trigger0* pConcret = dynamic_cast<Trigger0*>(const_cast<Trigger0Base*>(pOther));
+
+					if (!pConcret) {
+						return false;
+					}
+
+					return (pConcret->that_ == that_ && pConcret->f_ == f_);
+				} catch (...) {
+					return false;
+				}
+			}
+
 			ref_ptr_type that_;
 			func_type f_;
 		};
@@ -143,6 +163,22 @@ namespace ccc {
 
 			virtual Trigger1Base* clone() {
 				return new Trigger1(that_, f_);
+			}
+
+			virtual bool equal(const Trigger1Base* pOther) {
+				if (pOther == this) return true;
+
+				try {
+					Trigger1* pConcret = dynamic_cast<Trigger1*>(const_cast<Trigger1Base*>(pOther));
+
+					if (!pConcret) {
+						return false;
+					}
+
+					return (pConcret->that_ == that_ && pConcret->f_ == f_);
+				} catch (...) {
+					return false;
+				}
 			}
 
 			ref_ptr_type that_;
@@ -181,6 +217,22 @@ namespace ccc {
 				return new Trigger2(that_, f_);
 			}
 
+			virtual bool equal(const Trigger2Base* pOther) {
+				if (pOther == this) return true;
+
+				try {
+					Trigger2* pConcret = dynamic_cast<Trigger2*>(const_cast<Trigger2Base*>(pOther));
+
+					if (!pConcret) {
+						return false;
+					}
+
+					return (pConcret->that_ == that_ && pConcret->f_ == f_);
+				} catch (...) {
+					return false;
+				}
+			}
+
 			ref_ptr_type that_;
 			func_type f_;
 		};
@@ -217,6 +269,22 @@ namespace ccc {
 				return new Trigger3(that_, f_);
 			}
 
+			virtual bool equal(const Trigger3Base* pOther) {
+				if (pOther == this) return true;
+
+				try {
+					Trigger3* pConcret = dynamic_cast<Trigger3*>(const_cast<Trigger3Base*>(pOther));
+
+					if (!pConcret) {
+						return false;
+					}
+
+					return (pConcret->that_ == that_ && pConcret->f_ == f_);
+				} catch (...) {
+					return false;
+				}
+			}
+
 			ref_ptr_type that_;
 			func_type f_;
 		};
@@ -245,6 +313,22 @@ namespace ccc {
 			
 			virtual Trigger0Base* clone() {
 				return new Trigger0(f_);
+			}
+
+			virtual bool equal(const Trigger0Base* pOther) {
+				if (pOther == this) return true;
+
+				try {
+					Trigger0* pConcret = dynamic_cast<Trigger0*>(const_cast<Trigger0Base*>(pOther));
+
+					if (!pConcret) {
+						return false;
+					}
+
+					return (pConcret->f_ == f_);
+				} catch (...) {
+					return false;
+				}
 			}
 
 			func_type f_;
@@ -276,6 +360,22 @@ namespace ccc {
 				return new Trigger1(f_);
 			}
 
+			virtual bool equal(const Trigger1Base* pOther) {
+				if (pOther == this) return true;
+
+				try {
+					Trigger1* pConcret = dynamic_cast<Trigger1*>(const_cast<Trigger1Base*>(pOther));
+
+					if (!pConcret) {
+						return false;
+					}
+
+					return (pConcret->f_ == f_);
+				} catch (...) {
+					return false;
+				}
+			}
+
 			func_type f_;
 		};
 		
@@ -305,6 +405,22 @@ namespace ccc {
 				return new Trigger2(f_);
 			}
 
+			virtual bool equal(const Trigger2Base* pOther) {
+				if (pOther == this) return true;
+
+				try {
+					Trigger2* pConcret = dynamic_cast<Trigger2*>(const_cast<Trigger2Base*>(pOther));
+
+					if (!pConcret) {
+						return false;
+					}
+
+					return (pConcret->f_ == f_);
+				} catch (...) {
+					return false;
+				}
+			}
+
 			func_type f_;
 		};
 		
@@ -332,6 +448,22 @@ namespace ccc {
 			
 			virtual Trigger3Base* clone() {
 				return new Trigger3(f_);
+			}
+
+			virtual bool equal(const Trigger3Base* pOther) {
+				if (pOther == this) return true;
+
+				try {
+					Trigger3* pConcret = dynamic_cast<Trigger3*>(const_cast<Trigger3Base*>(pOther));
+
+					if (!pConcret) {
+						return false;
+					}
+
+					return (pConcret->f_ == f_);
+				} catch (...) {
+					return false;
+				}
 			}
 
 			func_type f_;
@@ -382,15 +514,16 @@ namespace ccc {
 		}
 
 		bool equal(const Proc0& other) const {
-			return false;
+			if (this == &other) return true;
+			return (pTrigger_ && pTrigger_->equal(other.pTrigger_));
 		}
 
 		Proc0& operator =(const Proc0& other) {
 			if (this == &other) return *this;
-			
+
 			if (pTrigger_) delete pTrigger_;
 			pTrigger_ = other.pTrigger_->clone();
-			
+
 			return *this;
 		}
 		
@@ -412,7 +545,7 @@ namespace ccc {
 
 	/**
 	 * @class Proc1
-	 * @brief 1参数的成员函数绑定对象
+	 * @brief 1参数的成员函数绑定对�?	
 	 */
 	template <typename P>
 	class Proc1 {
@@ -454,7 +587,8 @@ namespace ccc {
 		}
 
 		bool equal(const Proc1& other) const {
-			return false;
+			if (this == &other) return true;
+			return (pTrigger_ && pTrigger_->equal(other.pTrigger_));
 		}
 
 		Proc1& operator =(const Proc1& other) {
@@ -484,8 +618,7 @@ namespace ccc {
 	
 	/**
 	 * @class Proc2
-	 * @brief 2参数的成员函数绑定对象
-	 */
+	 * @brief 2参数的成员函数绑定对�?	 */
 	template <typename P1, typename P2>
 	class Proc2 {
 		typedef internal_::Void Void;
@@ -506,7 +639,7 @@ namespace ccc {
 			Proc2 p;
 
 			if (!!that) {
-				p.pTrigger_ = new internal_::Trigger1<T, R, P1, P2, ThatTraits>(that, func);
+				p.pTrigger_ = new internal_::Trigger2<T, R, P1, P2, ThatTraits>(that, func);
 			}
 
 			return p;
@@ -527,7 +660,8 @@ namespace ccc {
 		}
 
 		bool equal(const Proc2& other) const {
-			return false;
+			if (this == &other) return true;
+			return (pTrigger_ && pTrigger_->equal(other.pTrigger_));
 		}
 
 		Proc2& operator =(const Proc2& other) {
@@ -557,7 +691,7 @@ namespace ccc {
 	
 	/**
 	 * @class Proc3
-	 * @brief 3参数的成员函数绑定对象
+	 * @brief 3参数的成员函数绑定对�?	
 	 */
 	template <typename P1, typename P2, typename P3>
 	class Proc3 {
@@ -579,7 +713,7 @@ namespace ccc {
 			Proc3 p;
 
 			if (!!that) {
-				p.pTrigger_ = new internal_::Trigger1<T, R, P1, P2, P3, ThatTraits>(that, func);
+				p.pTrigger_ = new internal_::Trigger3<T, R, P1, P2, P3, ThatTraits>(that, func);
 			}
 
 			return p;
@@ -601,7 +735,8 @@ namespace ccc {
 		}
 
 		bool equal(const Proc3& other) const {
-			return false;
+			if (this == &other) return true;
+			return (pTrigger_ && pTrigger_->equal(other.pTrigger_));
 		}
 
 		Proc3& operator =(const Proc3& other) {
@@ -657,7 +792,7 @@ namespace ccc {
 	 * 绑定1参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对象
+	 * @return 生成的函数对�?	
 	 */
 	template <typename T, typename R, typename P>
 	Proc1<P> bind1(T* p, R (T::*f)(P)) {
@@ -681,7 +816,7 @@ namespace ccc {
 	 * 绑定2参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对象
+	 * @return 生成的函数对�?	
 	 */
 	template <typename T, typename R, typename P1, typename P2>
 	Proc2<P1, P2> bind2(T* p, R (T::*f)(P1, P2)) {
@@ -705,7 +840,7 @@ namespace ccc {
 	 * 绑定3参数成员函数
 	 * @param p this指针对象
 	 * @param f 成员函数指针
-	 * @return 生成的函数对象
+	 * @return 生成的函数对�?	
 	 */
 	template <typename T, typename R, typename P1, typename P2, typename P3>
 	Proc3<P1, P2, P3> bind3(T* p, R (T::*f)(P1, P2, P3)) {
@@ -728,7 +863,7 @@ namespace ccc {
 	/**
 	 * 绑定无参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对象
+	 * @return 生成的函数对�?	
 	 */
 	template <typename R>
 	Proc0 bind0(R (*f)()) {
@@ -739,7 +874,7 @@ namespace ccc {
 	/**
 	 * 绑定1参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对象
+	 * @return 生成的函数对�?	
 	 */
 	template <typename R, typename P>
 	Proc1<P> bind1(R (*f)(P)) {
@@ -750,7 +885,7 @@ namespace ccc {
 	/**
 	 * 绑定2参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对象
+	 * @return 生成的函数对�?	
 	 */
 	template <typename R, typename P1, typename P2>
 	Proc2<P1, P2> bind2(R (*f)(P1, P2)) {
@@ -761,7 +896,7 @@ namespace ccc {
 	/**
 	 * 绑定3参数函数
 	 * @param f 函数指针
-	 * @return 生成的函数对象
+	 * @return 生成的函数对�?	
 	 */
 	template <typename R, typename P1, typename P2, typename P3>
 	Proc3<P1, P2, P3> bind3(R (*f)(P1, P2, P3)) {

@@ -152,6 +152,111 @@ int main() {
 		UT_ASSERT(cnt.atm.get() == 0, "");
 	}UT_END
 
+	UT(installFilter) {
+		class Client {
+		public:
+			void start() {
+				loop.registerDispatcher(this, bind1(this, &Client::processMsg));
+				loopThd = Thread::execFunc(bind0(&loop, &MessageLoop::exec));
+				postThd = Thread::execFunc(bind0(this, &Client::post));
+
+				loop.installFilter(bind2(this, &Client::filterMsg));
+			}
+
+			void stop() {
+				postThd->join();
+				loop.stop();
+				loopThd->join();
+
+				delete postThd;
+				delete loopThd;
+			}
+
+			void processMsg(Message msg) {
+				printf("Message receive, type = %s, data = %d, to = %u, from = %u\n",
+					msg.type.c_str(), msg.data.as<int>(), msg.to, msg.from);
+
+				atm.set(msg.data.as<int>());
+			}
+
+			void post() {
+				msleep(1000);
+				Message msg("SomeMessage", Any(9));
+				loop.postTo(this, this, msg);
+			}
+
+			void filterMsg(Message& msg, bool& ignore) {
+				ignore = true;
+			}
+
+			MessageLoop loop;
+			Thread* loopThd;
+			Thread* postThd;
+			Atom atm;
+		};
+
+		Client cnt;
+
+		cnt.start();
+		msleep(100);
+		cnt.stop();
+
+		UT_ASSERT(cnt.atm.get() == 0, "");
+	}UT_END
+
+	UT(uninstallFilter) {
+		class Client {
+		public:
+			void start() {
+				loop.registerDispatcher(this, bind1(this, &Client::processMsg));
+				loopThd = Thread::execFunc(bind0(&loop, &MessageLoop::exec));
+				postThd = Thread::execFunc(bind0(this, &Client::post));
+
+				loop.installFilter(bind2(this, &Client::filterMsg));
+				loop.uninstallFilter(bind2(this, &Client::filterMsg));
+			}
+
+			void stop() {
+				postThd->join();
+				loop.stop();
+				loopThd->join();
+
+				delete postThd;
+				delete loopThd;
+			}
+
+			void processMsg(Message msg) {
+				printf("Message receive, type = %s, data = %d, to = %u, from = %u\n",
+					msg.type.c_str(), msg.data.as<int>(), msg.to, msg.from);
+
+				atm.set(msg.data.as<int>());
+			}
+
+			void post() {
+				msleep(1000);
+				Message msg("SomeMessage", Any(9));
+				loop.postTo(this, this, msg);
+			}
+
+			void filterMsg(Message& msg, bool& ignore) {
+				ignore = true;
+			}
+
+			MessageLoop loop;
+			Thread* loopThd;
+			Thread* postThd;
+			Atom atm;
+		};
+
+		Client cnt;
+
+		cnt.start();
+		msleep(100);
+		cnt.stop();
+
+		UT_ASSERT(cnt.atm.get() == 9, "");
+	}UT_END
+
 	UT_RUN
 	UT_APP_END
 	UT_RETURN

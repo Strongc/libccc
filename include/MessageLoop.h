@@ -29,19 +29,28 @@ namespace ccc {
 		Message(const Message& other);
 		explicit Message(const std::string& type);
 		Message(const std::string& type, const Any& data);
+
+		Message& Message::copy(const Message& other);
 		
 		Message& operator =(const Message& other);
 
 	private:
+		bool operator ==(const Message& other) {}
+		bool operator !=(const Message& other) {}
+
 		static Atom s_atm;
 	};
 	
-	struct MessageLoopBase {
+	class MessageLoopBase {
+		CCC_NONCOPYLABLE(MessageLoopBase);
+	public:
 		typedef Proc1<Message> dispatcher_type;
 		typedef Proc2<Message&, bool&> filter_type;
 		
 		static const void* MESSAGE_TARGET_BROADCAST;
 		static const void* MESSAGE_TARGET_NONE;
+
+		MessageLoopBase();
 
 		virtual bool registerDispatcher(void* toId, dispatcher_type dispatcher) = 0;
 		virtual void unregisterDispatcher(void* toId) = 0;
@@ -57,6 +66,10 @@ namespace ccc {
 		bool postTo(void* toId, void* fromId, Message msg);
 		bool postback(Message msg);
 		bool postback(Message msg, void* rewriteFromId);
+
+	private:
+		bool operator ==(const MessageLoopBase& other) {}
+		bool operator !=(const MessageLoopBase& other) {}
 	};
 	
 	class MessageLoop : public MessageLoopBase {
