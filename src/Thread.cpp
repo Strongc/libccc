@@ -111,13 +111,6 @@ Thread::Thread(c_func_types f)
 	: ThreadBase(new internal_::ThreadData(bind0(f))) {}
 	
 Thread* Thread::execFunc(Proc0 f) {
-	/*internal_::ThreadData* p = dynamic_cast<internal_::ThreadData*>(pd_);
-	
-	if (p) {
-		p->func = f;
-		run();
-	}*/
-
 	Thread* ret = new Thread(f);
 
 	ret->run();
@@ -125,13 +118,6 @@ Thread* Thread::execFunc(Proc0 f) {
 }
 
 Thread* Thread::execFunc(c_func_types f) {
-	/*internal_::ThreadData* p = dynamic_cast<internal_::ThreadData*>(pd_);
-	
-	if (p) {
-		p->func = bind0(f);
-		run();
-	}*/
-
 	Thread* ret = new Thread(f);
 
 	ret->run();
