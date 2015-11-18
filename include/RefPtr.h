@@ -8,7 +8,7 @@ namespace ccc {
 
 	/**
 	 * @class RefException
-	 * @brief SimplePtrר���쳣
+	 * @brief RefPtr专用异常
 	 */
 	class RefException : public std::exception {
 	public:
@@ -67,7 +67,7 @@ namespace ccc {
 				CCC_DBG_PRINT("Ref deleting\n");
 			}
 
-			void addRef() {
+			void incObjRefCount() {
 				if (p_) {
 					nRefCnt_.inc();
 				}
@@ -75,11 +75,11 @@ namespace ccc {
 				CCC_DBG_PRINT("Ref addRef, %u\n", nRefCnt_.get());
 			}
 
-			void release() {
-				// RefProxy ����������������ⲿ��SafePtr�����ģ����Բ���ҪҲ������release�������Լ�
+			void decObjRefCount() {
+				/*
+				 * RefProxy 对象的生存期是由外部的SafePtr管理的，所以不需要也不能在release中析构自�?
+				 */
 				if (nRefCnt_.dec() <= 0) {
-					CCC_ASSERT(nRefCnt_.get() == 0);
-
 					if (p_) {
 						delete p_;
 						p_ = 0;
@@ -92,7 +92,7 @@ namespace ccc {
 			}
 
 			bool empty() const {
-				return (p_ == 0);
+				return (nRefCnt_.get() <= 0);
 			}
 
 			ptr_type p_;
@@ -100,7 +100,7 @@ namespace ccc {
 		};
 		
 		/**
-		 * �����ü���ָ�룬��֧��weak����
+		 * 简单引用计数指针，不支持weak引用
 		 */
 		template <typename T>
 		class SafePtr {
@@ -135,7 +135,7 @@ namespace ccc {
 			}
 
 			bool empty() const {
-				return (!pProxy_ || !pProxy_->p_);
+				return (!pProxy_);
 			}
 			
 			ptr_type ptr() {
@@ -190,11 +190,11 @@ namespace ccc {
 					pProxy_ = 0;
 				}
 
-				proxy_type* pRef = other.pProxy_;
+				proxy_type* pProxy = other.pProxy_;
 
-				if (pRef) {
-					pRef->addRef();
-					pProxy_ = pRef;
+				if (pProxy) {
+					pProxy->addRef();
+					pProxy_ = pProxy;
 				}
 
 				return *this;
@@ -217,6 +217,10 @@ namespace ccc {
 			bool operator ==(const SafePtr& other) const {
 				return (pProxy_ == other.pProxy_);
 			}
+			
+			bool operator !=(const SafePtr& other) const {
+				return (pProxy_ != other.pProxy_);
+			}
 
 			operator bool() {
 				return !this->empty();
@@ -231,7 +235,7 @@ namespace ccc {
 		};
 
 		/**
-		 * ���ü���ָ�����
+		 * 引用计数指针基类
 		 */
 		template <typename T>
 		class RefPtrBase {
@@ -245,7 +249,7 @@ namespace ccc {
 			typedef T value_type;
 			typedef T* ptr_type;
 			
-			RefPtrBase() {}
+			RefPtrBase() : pProxy_(0) {}
 
 			virtual ~RefPtrBase() {
 				pProxy_ = 0;
@@ -268,8 +272,8 @@ namespace ccc {
 			}
 
 			bool empty() const {
-				// û��ָ���κ�Ref����Ref�ڲ��ǿյ�
-				return pProxy_.empty() || pProxy_->empty();
+				// 没有指向任何RefProxy对象或者RefProxy内部为空
+				return !pProxy_ || pProxy_->empty();
 			}
 
 			value_type& operator *() {
@@ -313,6 +317,9 @@ namespace ccc {
 			}
 
 		protected:
+			/*
+			 * 指向RefProxy的智能指针，RefProxy控制对象的生存期，SafeProxy控制RefProxy的生存期
+			 */
 			mutable proxy_ptr_type pProxy_;
 		};
 	}
@@ -321,11 +328,22 @@ namespace ccc {
 
 	/**
 	 * @class RefPtr
-	 * @brief ���ü���ָ��
+	 * @brief 引用计数指针
 	 */
 	template <typename T>
 	class RefPtr : public internal_::RefPtrBase<T> {
 		friend class WeakPtr<T>;
+		
+		void setRefProxy(proxy_ptr_type pProxy) {
+			try {
+				pProxy->incObjRefCount();
+			} catch (RefException& e) {
+				(void)e;
+				return;
+			}
+
+			pProxy_ = pProxy;
+		}
 
 	public:
 		RefPtr() {}
@@ -333,21 +351,21 @@ namespace ccc {
 		RefPtr(const RefPtr& other) {
 			pProxy_ = other.pProxy_;
 			
-			if (!pProxy_.empty()) {
-				pProxy_->addRef();
+			if (!this->empty()) {
+				pProxy_->incObjRefCount();
 			}
 		}
 		
 		explicit RefPtr(ptr_type ptr) {
 			if (ptr) {
 				pProxy_ = new proxy_type(ptr);
-				pProxy_->addRef();
+				pProxy_->incObjRefCount();
 			}
 		}
 		
 		virtual ~RefPtr() {
 			if (!this->empty()) {
-				pProxy_->release();
+				pProxy_->decObjRefCount();
 			}
 		}
 
@@ -356,28 +374,28 @@ namespace ccc {
 				return *this;
 			}
 			
-			if (!pProxy_.empty()) {
-				pProxy_->release();
+			if (!this->empty()) {
+				pProxy_->decObjRefCount();
 			}
 
 			pProxy_ = other.pProxy_;
 			
-			if (!pProxy_.empty()) {
-				pProxy_->addRef();
+			if (!this->empty()) {
+				pProxy_->incObjRefCount();
 			}
 
 			return *this;
 		}
 		
 		RefPtr& operator =(ptr_type ptr) {
-			if (!pProxy_.empty()) {
-				pProxy_->release();
+			if (!this->empty()) {
+				pProxy_->decObjRefCount();
 				pProxy_ = 0;
 			}
 
 			if (ptr) {
 				pProxy_ = new proxy_type(ptr);
-				pProxy_->addRef();
+				pProxy_->incObjRefCount();
 			}
 			
 			return *this;
@@ -394,7 +412,7 @@ namespace ccc {
 
 	/**
 	 * @class WeakPtr
-	 * @brief ������ָ��
+	 * @brief 弱引用指�?
 	 */
 	template <typename T>
 	class WeakPtr : public internal_::RefPtrBase<T> {
@@ -415,19 +433,10 @@ namespace ccc {
 			pProxy_ = 0;
 		}
 
-		// ת��Ϊǿ����
+		// 转换为强引用
 		strong_ptr_type lock() {
-			RefPtr<T> ret;
-
-			try {
-				pProxy_->addRef();
-			} catch (RefException& e) {
-				(void)e;
-				return ret;
-			}
-
-			ret.pProxy_ = pProxy_;
-			
+			strong_ptr_type ret;
+			ret.setRefProxy(pProxy_);			
 			return ret;
 		}
 
@@ -440,10 +449,7 @@ namespace ccc {
 		}
 		
 		WeakPtr& operator =(const strong_ptr_type& other) {
-			if (&other != this) {
-				pProxy_ = other.pProxy_;
-			}
-
+			pProxy_ = other.pProxy_;
 			return *this;
 		}
 

@@ -13,10 +13,20 @@ namespace ccc {
 		struct MessageLoopData;
 	}
 	
-	struct MessageLoopBase;
+	class MessageLoopBase;
 
 	class Message {
+		CCC_INCOMPARABLE(Message)
+
 	public:
+		Message();
+		Message(const Message& other);
+		explicit Message(const std::string& type);
+		Message(const std::string& type, const Any& data);
+
+		Message& copy(const Message& other);
+		Message& operator =(const Message& other);
+
 		void* from;
 		void* to;
 		MessageLoopBase* loop;
@@ -24,25 +34,15 @@ namespace ccc {
 		std::string type;
 		unsigned seq;
 		Any data;
-		
-		Message();
-		Message(const Message& other);
-		explicit Message(const std::string& type);
-		Message(const std::string& type, const Any& data);
-
-		Message& Message::copy(const Message& other);
-		
-		Message& operator =(const Message& other);
 
 	private:
-		bool operator ==(const Message& other) {}
-		bool operator !=(const Message& other) {}
-
 		static Atom s_atm;
 	};
 	
 	class MessageLoopBase {
-		CCC_NONCOPYLABLE(MessageLoopBase);
+		CCC_NONCOPYLABLE(MessageLoopBase)
+		CCC_INCOMPARABLE(MessageLoopBase)
+
 	public:
 		typedef Proc1<Message> dispatcher_type;
 		typedef Proc2<Message&, bool&> filter_type;
@@ -64,18 +64,17 @@ namespace ccc {
 		virtual void defaultDispatcher(Message msg) = 0;
 
 		bool postTo(void* toId, void* fromId, Message msg);
+		bool postTo(void* toId, void* fromId, const std::string& type, const Any& data);
 		bool postback(Message msg);
 		bool postback(Message msg, void* rewriteFromId);
-
-	private:
-		bool operator ==(const MessageLoopBase& other) {}
-		bool operator !=(const MessageLoopBase& other) {}
 	};
 	
 	class MessageLoop : public MessageLoopBase {
+	protected:
+		explicit MessageLoop(internal_::MessageLoopData* pd);
+	
 	public:
 		MessageLoop();
-		explicit MessageLoop(internal_::MessageLoopData* pd);
 		virtual ~MessageLoop();
 
 		virtual bool registerDispatcher(void* toId, dispatcher_type dispatcher);

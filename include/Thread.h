@@ -20,13 +20,13 @@ namespace ccc {
 
 	public:
 		ThreadBase();
-		ThreadBase(internal_::ThreadBaseData* pd);
 		virtual ~ThreadBase();
 
 		void run();
 		void join();
 
 	protected:
+		explicit ThreadBase(internal_::ThreadBaseData* pd);
 		virtual void exec() = 0;
 
 		internal_::ThreadBaseData* pd_;
@@ -37,7 +37,7 @@ namespace ccc {
 
 	/**
 	 * @class 线程
-	 * @brief 接收一个函数对象并在新开启的线程中运�?
+	 * @brief 接收一个函数对象并在新开启的线程中运行
 	 */
 	class Thread : public ThreadBase {
 	public:

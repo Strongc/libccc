@@ -5,7 +5,9 @@
 #include <vector>
 #include <string>
 
+#ifndef UT_BLOCK_BEFORE_QUIT
 #define UT_BLOCK_BEFORE_QUIT
+#endif // UT_BLOCK_BEFORE_QUIT
 
 namespace ut {
 	struct ITestUnit {
@@ -103,13 +105,5 @@ namespace ut {
 			}\
 		}\
 	} while (0);
-
-//#ifndef protected
-//#define protected public
-//#endif // protected
-
-//#ifndef private
-//#define private public
-//#endif // private
 
 #endif // __UT_H__

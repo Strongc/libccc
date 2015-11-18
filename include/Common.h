@@ -49,4 +49,11 @@ namespace ccc {
 		void operator = (const type&) {}
 #endif // CCC_NONCOPYLABLE
 
+#ifndef CCC_INCOMPARABLE
+#define CCC_INCOMPARABLE(type) \
+	private:\
+		void operator == (const type&) {}\
+		void operator != (const type&) {}
+#endif // CCC_INCOMPARABLE
+
 #endif // __CCC_COMMON_H__

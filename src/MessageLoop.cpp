@@ -39,7 +39,7 @@ Message::Message() : from(0), to(0), loop(0) {
 }
 
 Message::Message(const Message& other) {
-	copy(other);
+	this->copy(other);
 }
 
 Message::Message(const std::string& type) : from(0), to(0), loop(0) {
@@ -78,6 +78,17 @@ bool MessageLoopBase::postTo(void* toId, void* fromId, Message msg) {
 	msg.from = fromId;
 	msg.to = toId;
 
+	return this->post(msg);
+}
+
+bool MessageLoopBase::postTo(void* toId, void* fromId, const std::string& type, const Any& data) {
+	Message msg;
+	
+	msg.to = toId;
+	msg.from = fromId;
+	msg.type = type;
+	msg.data = data;
+	
 	return this->post(msg);
 }
 
@@ -120,7 +131,7 @@ bool MessageLoop::registerDispatcher(void* toId, MessageLoopBase::dispatcher_typ
 	}
 	
 	CCC_LOCK(pd_->mtxMapDispatcher);
-	
+
 	pd_->mapDispatcher[toId] = dispatcher;
 	
 	return true;
@@ -183,6 +194,7 @@ bool MessageLoop::execOnce() {
 	return execOnce_internal();
 }
 
+// return true 表示要退出循环
 bool MessageLoop::execOnce_internal() {
 	pd_->semMessage.wait();
 
@@ -255,7 +267,7 @@ void MessageLoop::stop() {
 	stopAsync();
 
 	{
-		// stop获得锁时，exec或execOnce一定已经返�?
+		// stop获得锁时，exec或execOnce一定已经返回
 		CCC_LOCK(pd_->mtxLooping);
 	}
 }
