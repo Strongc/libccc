@@ -203,6 +203,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\Buffer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\Common.h"
 				>
 			</File>

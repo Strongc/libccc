@@ -10,7 +10,7 @@ namespace ccc {
 	}
 
 	class Semaphore {
-		CCC_NONCOPYLABLE(Semaphore)
+		CCC_NONCOPYABLE(Semaphore)
 
 	public:
 		Semaphore();

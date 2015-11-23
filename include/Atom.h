@@ -6,25 +6,25 @@
 namespace ccc {
 
 	class Atom {
-		CCC_NONCOPYLABLE(Atom)
+		CCC_NONCOPYABLE(Atom)
 
 	public:
-		Atom(int val = 0) : val_(val) {}
+		Atom(long val = 0) : val_(val) {}
 		~Atom() {}
 
-		int get() const;
-		int set(int v); // return new value
+		long get() const;
+		long set(long v); // return new value
 
-		int add(int v); // return new value
-		int sub(int v); // return new value
-		int inc(); // return new value
-		int dec(); // return new value
+		long add(long v); // return new value
+		long sub(long v); // return new value
+		long inc(); // return new value
+		long dec(); // return new value
 
-		int xchg(int v); // return old value
-		int xchgcmp(int v, int cmp); // return old value
+		long xchg(long v); // return old value
+		long xchgcmp(long v, long cmp); // return old value
 
 	private:
-		volatile int val_;
+		volatile long val_;
 	};
 }
 

@@ -1,8 +1,8 @@
 #ifndef __CCC_REF_PTR_H__
 #define __CCC_REF_PTR_H__
 
-#include "Atom.h"
 #include "Common.h"
+#include "Atom.h"
 
 namespace ccc {
 
@@ -19,7 +19,7 @@ namespace ccc {
 	
 		template <typename T>
 		class SafeProxy {
-			CCC_NONCOPYLABLE(SafeProxy)
+			CCC_NONCOPYABLE(SafeProxy)
 
 		private:
 			~SafeProxy() {
@@ -53,7 +53,7 @@ namespace ccc {
 		
 		template <typename T>
 		class RefProxy {
-			CCC_NONCOPYLABLE(RefProxy)
+			CCC_NONCOPYABLE(RefProxy)
 
 		public:
 			typedef T value_type; 
@@ -239,7 +239,7 @@ namespace ccc {
 		 */
 		template <typename T>
 		class RefPtrBase {
-			CCC_NONCOPYLABLE(RefPtrBase)
+			CCC_NONCOPYABLE(RefPtrBase)
 
 		protected:
 			typedef RefProxy<T> proxy_type;
@@ -346,8 +346,18 @@ namespace ccc {
 		}
 
 	public:
+		typedef WeakPtr<T> weak_type;
+
 		RefPtr() {}
-		
+
+		RefPtr(int null) {
+			LC_ASSERT(null == 0);
+		}
+
+		RefPtr(weak_type weak) {
+			(*this) = weak.lock();
+		}
+
 		RefPtr(const RefPtr& other) {
 			pProxy_ = other.pProxy_;
 			
@@ -412,16 +422,15 @@ namespace ccc {
 
 	/**
 	 * @class WeakPtr
-	 * @brief 弱引用指�?
-	 */
+	 * @brief 弱引用指�?	 */
 	template <typename T>
 	class WeakPtr : public internal_::RefPtrBase<T> {
 	public:
-		typedef RefPtr<T> strong_ptr_type;
+		typedef RefPtr<T> strong_type;
 
 		WeakPtr() {}
 
-		explicit WeakPtr(const strong_ptr_type& other) {
+		WeakPtr(const strong_type& other) {
 			pProxy_ = other.pProxy_;
 		}
 
@@ -434,8 +443,8 @@ namespace ccc {
 		}
 
 		// 转换为强引用
-		strong_ptr_type lock() {
-			strong_ptr_type ret;
+		strong_type lock() {
+			strong_type ret;
 			ret.setRefProxy(pProxy_);			
 			return ret;
 		}
@@ -448,7 +457,7 @@ namespace ccc {
 			return *this;
 		}
 		
-		WeakPtr& operator =(const strong_ptr_type& other) {
+		WeakPtr& operator =(const strong_type& other) {
 			pProxy_ = other.pProxy_;
 			return *this;
 		}
@@ -457,7 +466,7 @@ namespace ccc {
 			return (pProxy_ == other.pProxy_);
 		}
 
-		bool operator ==(const strong_ptr_type& other) const {
+		bool operator ==(const strong_type& other) const {
 			return (pProxy_ == other.pProxy_);
 		}
 		
@@ -465,9 +474,64 @@ namespace ccc {
 			return (pProxy_ != other.pProxy_);
 		}
 
-		bool operator !=(const strong_ptr_type& other) const {
+		bool operator !=(const strong_type& other) const {
 			return (pProxy_ != other.pProxy_);
 		}
+	};
+	
+	template <typename T>
+	class UniquePtr {
+		CCC_NONCOPYABLE(UniquePtr);
+		CCC_INCOMPARABLE(UniquePtr);
+
+	public:
+		typedef T value_type;
+		typedef T* ptr_type;
+
+		explicit UniquePtr(T* ptr) : ptr_(ptr) {}
+		
+		~UniquePtr() {
+			if (ptr_) delete ptr_;
+		}
+
+		ptr_type ptr() {
+			return ptr_;
+		}
+
+		const ptr_type ptr() const {
+			return ptr_;
+		}
+
+		bool empty() const {
+			return !ptr_;
+		}
+
+		value_type& operator *() {
+			return *ptr_;
+		}
+		
+		const value_type& operator *() const {
+			return *ptr_;
+		}
+
+		ptr_type operator ->() {
+			return ptr_;
+		}
+
+		const ptr_type operator ->() const {
+			return ptr_;
+		}
+
+		operator bool() {
+			return ptr_;
+		}
+		
+		bool operator !() const {
+			return !ptr_;
+		}
+
+	private:
+		ptr_type ptr_;
 	};
 }
 

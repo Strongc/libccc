@@ -25,7 +25,8 @@ namespace ccc {
 	private:
 		internal_::MutexData* pd_;
 		
-		CCC_NONCOPYLABLE(Mutex)
+		CCC_NONCOPYABLE(Mutex);
+		CCC_INCOMPARABLE(Mutex);
 	};
 
 	/**
@@ -51,7 +52,8 @@ namespace ccc {
 
 		Mutex* pMtx_;
 		
-		CCC_NONCOPYLABLE(Lock)
+		CCC_NONCOPYABLE(Lock)
+		CCC_INCOMPARABLE(Lock);
 	};
 	
 	#define CCC_LOCK(mtx) ccc::Lock lock_##__LINE__(&(mtx));

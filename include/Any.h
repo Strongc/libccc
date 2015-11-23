@@ -13,7 +13,7 @@ namespace ccc {
 
 			virtual ContainerBase* clone() = 0;
 
-			CCC_NONCOPYLABLE(ContainerBase)
+			CCC_NONCOPYABLE(ContainerBase)
 		};
 
 		template <typename T>
@@ -34,16 +34,14 @@ namespace ccc {
 
 	/**
 	 * @class AnyException
-	 * @brief 从Any中取值时抛出的异常
-	 */
+	 * @brief 从Any中取值时抛出的异�?	 */
 	class AnyException : public std::exception {
 	public:
 		AnyException(const char* msg) : std::exception(msg) {}
 	};
 
 	/**
-	 * @class Any类模板
-	 * @brief 若要修改Any功能，则实现AnyT<Container>的子类，其中Container为自定义ContainerBase子类模板
+	 * @class Any类模�?	 * @brief 若要修改Any功能，则实现AnyT<Container>的子类，其中Container为自定义ContainerBase子类模板
 	 */
 	template <template <typename T> class ContainerT>
 	class AnyT {
@@ -51,7 +49,7 @@ namespace ccc {
 		AnyT() : p_(0) {}
 
 		template <typename T>
-		explicit inline AnyT(const T& val) {
+		inline AnyT(const T& val) {
 			p_ = new ContainerT<T>(val);
 		}
 
@@ -123,7 +121,7 @@ namespace ccc {
 			return *this;
 		}
 
-		// 永远不相等
+		// 永远不相�?
 
 		bool operator ==(const AnyT& other) const {
 			return false;

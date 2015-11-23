@@ -42,12 +42,12 @@ namespace ccc {
 #endif // ENABLE_ASSERT
 #endif // CCC_ASSERT
 
-#ifndef CCC_NONCOPYLABLE
-#define CCC_NONCOPYLABLE(type) \
+#ifndef CCC_NONCOPYABLE
+#define CCC_NONCOPYABLE(type) \
 	private:\
 		type(const type&) {}\
 		void operator = (const type&) {}
-#endif // CCC_NONCOPYLABLE
+#endif // CCC_NONCOPYABLE
 
 #ifndef CCC_INCOMPARABLE
 #define CCC_INCOMPARABLE(type) \

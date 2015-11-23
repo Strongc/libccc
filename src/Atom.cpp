@@ -1,41 +1,75 @@
 #include "Atom.h"
+#include "Lock.h"
 #include "internal/Common_internal.h"
+#include <vector>
 
 namespace ccc {
 
-int Atom::get() const {
+namespace internal_ {
+
+#ifndef _WIN32
+	class AtomMutexMap {
+	public:
+		AtomMutexMap() {
+			for (int i  = 0; i < LOCK_COUNT; ++i) {
+				mutexs_.push_back(new base::Lock);
+			}
+		}
+
+		~AtomMutexMap() {
+			for (int i  = 0; i < LOCK_COUNT; ++i) {
+				delete mutexs_.at(i);
+			}
+		}
+
+		base::Lock* getMutex(void *hash) {
+			unsigned pos = (unsigned)hash % LOCK_COUNT;
+			return mutexs_.at(pos);
+		}
+
+	private:
+		enum {LOCK_COUNT = 13};
+		std::vector<base::Mutex*> mutexs_;
+	};
+
+	AtomMutexMap g_atomMutexMap;
+#endif // _WIN32
+}
+
+#if !defined(_WIN32) && !defined(CCC_ATOM_LOCK)
+#define CCC_ATOM_LOCK(ptr) CCC_LOCK_P(internal_::g_atomMutexMap.getMutex(ptr))
+#endif
+
+long Atom::get() const {
 	return val_;
 }
 
-int Atom::set(int v) {
+long Atom::set(long v) {
 #ifdef _WIN32
 	InterlockedExchange((LONG *)&val_, v);
 #else
+	CCC_ATOM_LOCK(this);
 	val_ = v;
 #endif
 	return v;
 }
 
-int Atom::add(int v) {
+long Atom::add(long v) {
 	int tmp = v;
 #ifdef _WIN32
 	return InterlockedExchangeAdd((LONG *)&val_, tmp) + v;
-#elif defined(__i386__) || defined(__x86_64__)
-	asm volatile ("lock; xaddl %0,%1"
-		: "=r" (tmp), "=m" (val_)
-		: "0" (tmp), "m" (val_)
-		: "memory", "cc");
-	return tmp + v;
 #else
-	return __sync_fetch_and_add(&val_, tmp) + v;
+	CCC_ATOM_LOCK(this);
+	val_ += v;
+	return val_;
 #endif
 }
 
-int Atom::sub(int v) {
+long Atom::sub(long v) {
 	return add(-v);
 }
 
-int Atom::inc() {
+long Atom::inc() {
 #ifdef _WIN32
 	return InterlockedIncrement((LONG *)&val_);
 #else
@@ -43,7 +77,7 @@ int Atom::inc() {
 #endif
 }
 
-int Atom::dec() {
+long Atom::dec() {
 #ifdef _WIN32
 	return InterlockedDecrement((LONG *)&val_);
 #else
@@ -51,33 +85,29 @@ int Atom::dec() {
 #endif
 }
 
-int Atom::xchg(int v) {
+long Atom::xchg(long v) {
 #ifdef _WIN32
 	return InterlockedExchange((LONG *)&val_, v);
-#elif defined(__i386__) || defined(__x86_64__)
-	int prev = v;
-	asm volatile ("xchgl %0, %1"
-		: "=r" (prev), "+m" (val_)
-		: "0" (prev));
-	return prev;
 #else
-	__sync_synchronize();
-	return __sync_lock_test_and_set(&val_, v);
+	CCC_ATOM_LOCK(this);
+	long ret = val_;
+	val_ = v;
+	return ret;
 #endif
 }
 
-int Atom::xchgcmp(int v, int cmp) {
+long Atom::xchgcmp(long v, long cmp) {
 #ifdef _WIN32
 	return InterlockedCompareExchange((LONG *)&val_, v, cmp);
-#elif defined(__i386__) || defined(__x86_64__)
-	int prev;
-	asm volatile ("lock; cmpxchgl %1, %2"
-		: "=a" (prev)
-		: "r" (v), "m" (val_), "0"(cmp)
-		: "memory", "cc");
-	return prev;
 #else
-	return __sync_val_compare_and_swap(&val_, cmp, v);
+	CCC_ATOM_LOCK(this);
+
+	long ret = val_;
+	if (val_ == cmp) {
+		val_ = v;
+	}
+
+	return ret;
 #endif
 }
 

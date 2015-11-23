@@ -40,7 +40,7 @@ namespace ccc {
 	};
 	
 	class MessageLoopBase {
-		CCC_NONCOPYLABLE(MessageLoopBase)
+		CCC_NONCOPYABLE(MessageLoopBase)
 		CCC_INCOMPARABLE(MessageLoopBase)
 
 	public:
